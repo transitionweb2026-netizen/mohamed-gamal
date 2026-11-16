@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Clock3, MapPin, Navigation, Phone } from "lucide-react";
-import { siteConfig, telHref, whatsappHref } from "@/config/site";
+import { phones, siteConfig, telFor, whatsappHref } from "@/config/site";
 import { resolveLocale } from "@/i18n/dictionaries";
 import { PageHero } from "@/components/hero/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
@@ -29,7 +29,7 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
           <SectionHeading eyebrow={c.intro.eyebrow} title={c.intro.title} text={c.intro.text} />
           <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {/* Phone — electric cyan glass */}
-            <a href={telHref} className="lg lg--aqua lg-hover group flex flex-col p-7 lg:col-span-2" data-reveal>
+            <div className="lg lg--aqua lg-hover group flex flex-col p-7 lg:col-span-2" data-reveal>
               <div className="flex items-center justify-between">
                 <span className="icon-tile icon-tile--ink icon-tile--lg">
                   <Phone size={26} aria-hidden />
@@ -38,16 +38,27 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
               </div>
               <h3 className="mt-6 text-xl font-bold">{c.cards.phone.title}</h3>
               <p className="mt-1 text-ink-900/70">{c.cards.phone.text}</p>
-              <p className="mt-5 font-display text-[clamp(1.6rem,3.4vw,2.4rem)] font-extrabold tracking-wide">
-                <span dir="ltr" className="inline-block">
-                  {siteConfig.phone.display}
-                </span>
-              </p>
-              <span className="link-arrow mt-4">
-                {c.cards.phone.action}
-                <Arrow size={16} />
-              </span>
-            </a>
+              <ul className="mt-5 space-y-2.5">
+                {phones.map((p) => (
+                  <li key={p.e164}>
+                    <a
+                      href={telFor(p)}
+                      className="flex items-center justify-between gap-4 rounded-2xl bg-white/60 px-4 py-3 shadow-[inset_0_0_0_1px_rgb(73_217_244/0.7)] transition-[background-color,box-shadow] duration-300 hover:bg-white hover:shadow-[inset_0_0_0_1.5px_rgb(73_217_244),0_10px_24px_-14px_rgb(73_217_244)]"
+                    >
+                      <span dir="ltr" className="font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-extrabold tracking-wide">
+                        {p.display}
+                      </span>
+                      <span className="btn btn--ink btn--sm pointer-events-none">
+                        <span className="btn__icon">
+                          <Phone size={14} aria-hidden />
+                        </span>
+                        {c.cards.phone.action}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
             {/* WhatsApp — teal ink glass */}
             <a

@@ -1,5 +1,5 @@
 import { Phone } from "lucide-react";
-import { siteConfig, telHref } from "@/config/site";
+import { phones, primaryPhone, telFor, telHref } from "@/config/site";
 import { SocialLinks } from "@/components/ui/social-links";
 
 interface Props {
@@ -7,8 +7,9 @@ interface Props {
 }
 
 /**
- * The hero's unified horizontal panel: [ social icons ] | [ phone ].
- * One row at every width — on phones the labels drop and controls shrink.
+ * The hero's unified horizontal panel: [ social icons ] | [ phone numbers ].
+ * One row at every width — the booking numbers stack, so adding a number
+ * never widens the panel; on phones the labels drop and controls shrink.
  */
 export function ContactPanel({ labels }: Props) {
   return (
@@ -18,15 +19,18 @@ export function ContactPanel({ labels }: Props) {
         <SocialLinks />
       </div>
       <span className="panel-divider" aria-hidden />
-      <a href={telHref} className="panel-phone" aria-label={`${labels.call}: ${siteConfig.phone.display}`}>
-        <span className="panel-phone__icon">
+      <div className="panel-phone">
+        <a href={telHref} className="panel-phone__icon" aria-label={`${labels.call}: ${primaryPhone.display}`}>
           <Phone size={18} strokeWidth={2.2} aria-hidden />
+        </a>
+        <span className="flex flex-col">
+          {phones.map((p) => (
+            <a key={p.e164} href={telFor(p)} dir="ltr" className="panel-phone__num" aria-label={`${labels.call}: ${p.display}`}>
+              {p.display}
+            </a>
+          ))}
         </span>
-        <span>
-          <small>{labels.call}</small>
-          <strong dir="ltr">{siteConfig.phone.display}</strong>
-        </span>
-      </a>
+      </div>
     </div>
   );
 }

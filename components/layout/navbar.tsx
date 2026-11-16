@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CalendarCheck, Phone } from "lucide-react";
-import { siteConfig, telHref, whatsappHref } from "@/config/site";
+import { phones, telFor, whatsappHref } from "@/config/site";
 import { localizeHref, splitLocale, type Locale } from "@/i18n/config";
 import { BrandMark } from "@/components/ui/brand";
 import { WhatsAppIcon } from "@/components/ui/brand-icons";
@@ -163,18 +163,20 @@ export function Navbar({ locale, items, labels, doctor }: Props) {
           ))}
         </nav>
         <div className="container-x mt-8 grid gap-3 !px-0 sm:grid-cols-2">
-          <a href={whatsappHref(labels.whatsappMessage)} target="_blank" rel="noopener noreferrer" className="btn btn--aqua w-full">
+          <a href={whatsappHref(labels.whatsappMessage)} target="_blank" rel="noopener noreferrer" className="btn btn--aqua w-full sm:col-span-2">
             <span className="btn__icon">
               <WhatsAppIcon width={17} height={17} />
             </span>
             {labels.whatsapp}
           </a>
-          <a href={telHref} className="btn btn--glass w-full">
-            <span className="btn__icon">
-              <Phone size={16} aria-hidden />
-            </span>
-            <span dir="ltr">{siteConfig.phone.display}</span>
-          </a>
+          {phones.map((p) => (
+            <a key={p.e164} href={telFor(p)} className="btn btn--glass w-full" aria-label={`${labels.call}: ${p.display}`}>
+              <span className="btn__icon">
+                <Phone size={16} aria-hidden />
+              </span>
+              <span dir="ltr">{p.display}</span>
+            </a>
+          ))}
         </div>
         <div className="container-x mt-8 flex items-center justify-between !px-0">
           <SocialLinks />

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUp, Clock3, MapPin, Phone } from "lucide-react";
-import { siteConfig, telHref, whatsappHref } from "@/config/site";
+import { phones, telFor, whatsappHref } from "@/config/site";
 import type { Dictionary } from "@/content/types";
 import { localizeHref, type Locale } from "@/i18n/config";
 import { BrandMark } from "@/components/ui/brand";
@@ -51,18 +51,18 @@ export function Footer({ t, locale, items }: { t: Dictionary; locale: Locale; it
         </FooterCol>
 
         <FooterCol title={t.footer.contact} wide>
-          <li>
-            <a href={telHref} className="group flex items-center gap-3 py-1.5">
-              <span className="icon-tile icon-tile--glass icon-tile--sm">
-                <Phone size={16} aria-hidden />
-              </span>
-              <span>
-                <span className="block text-xs text-aqua-300">{t.footer.phone}</span>
-                <span dir="ltr" className="font-display font-semibold text-white transition-colors group-hover:text-aqua-300">
-                  {siteConfig.phone.display}
-                </span>
-              </span>
-            </a>
+          <li className="flex items-center gap-3 py-1.5">
+            <span className="icon-tile icon-tile--glass icon-tile--sm">
+              <Phone size={16} aria-hidden />
+            </span>
+            <span>
+              <span className="block text-xs text-aqua-300">{t.footer.phone}</span>
+              {phones.map((p) => (
+                <a key={p.e164} href={telFor(p)} dir="ltr" className="block font-display font-semibold text-white transition-colors hover:text-aqua-300">
+                  {p.display}
+                </a>
+              ))}
+            </span>
           </li>
           <li>
             <a href={whatsappHref(t.cta.whatsappMessage)} target="_blank" rel="noopener noreferrer" className="group flex items-center gap-3 py-1.5">

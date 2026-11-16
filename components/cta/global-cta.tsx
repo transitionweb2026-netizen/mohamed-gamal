@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Phone, Sparkles } from "lucide-react";
-import { siteConfig, telHref, whatsappHref } from "@/config/site";
+import { phones, telFor, telHref, whatsappHref } from "@/config/site";
 import { photos } from "@/content/media";
 import type { Dictionary } from "@/content/types";
 import type { Locale } from "@/i18n/config";
@@ -62,9 +62,14 @@ export function GlobalCta({ t, locale }: { t: Dictionary; locale: Locale }) {
               <p className="mt-6 flex flex-wrap items-center gap-2 text-sm text-white/60">
                 <span className="dot-live" aria-hidden />
                 {t.cta.note}
-                <a href={telHref} dir="ltr" className="font-display font-semibold text-aqua-300 hover:text-aqua-500">
-                  {siteConfig.phone.display}
-                </a>
+                {phones.map((p, i) => (
+                  <span key={p.e164} className="inline-flex items-center gap-2">
+                    {i > 0 ? <span className="h-1 w-1 rotate-45 bg-aqua-500" aria-hidden /> : null}
+                    <a href={telFor(p)} dir="ltr" className="font-display font-semibold text-aqua-300 transition-colors hover:text-aqua-500">
+                      {p.display}
+                    </a>
+                  </span>
+                ))}
               </p>
             </div>
 
