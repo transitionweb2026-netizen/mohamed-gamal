@@ -1,18 +1,17 @@
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { LucideProps } from "lucide-react";
+import logoMark from "@/public/images/brand/logo-mark.png";
 
 /**
- * Logo mark — ⚠ PLACEHOLDER typographic monogram until a real logo exists.
- * A cyan glass tile with the "MG" monogram and a teal motion arc.
+ * Logo mark — Dr. Mohamed Gamal's MG monogram on the teal tile
+ * (compact version of the full logo, which has the wordmark underneath).
+ * Decorative: the doctor's name is always written next to it.
  */
-export function BrandMark({ monogram, className = "" }: { monogram: string; className?: string }) {
+export function BrandMark({ className = "" }: { className?: string }) {
   return (
     <span className={`brand-mark ${className}`} aria-hidden>
-      <svg viewBox="0 0 46 46" fill="none">
-        <path d="M6 35c9 5 23 5 33-9" stroke="rgb(0 41 51 / 0.35)" strokeWidth="2" strokeLinecap="round" />
-        <circle cx="39.5" cy="25.5" r="2.4" fill="#002933" />
-      </svg>
-      <span className="relative -mt-1">{monogram}</span>
+      <Image src={logoMark} alt="" sizes="96px" />
     </span>
   );
 }

@@ -29,7 +29,7 @@ interface Props {
     call: string;
     whatsappMessage: string;
   };
-  doctor: { name: string; tagline: string; monogram: string };
+  doctor: { name: string; tagline: string };
 }
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
@@ -91,7 +91,7 @@ export function Navbar({ locale, items, labels, doctor }: Props) {
       <header className="site-header" data-scrolled={scrolled || open}>
         <div className="nav-shell">
           <Link href={localizeHref("/", locale)} className="brand" aria-label={doctor.name}>
-            <BrandMark monogram={doctor.monogram} />
+            <BrandMark />
             <span className="brand-text">
               <strong>{doctor.name}</strong>
               <small>{doctor.tagline}</small>

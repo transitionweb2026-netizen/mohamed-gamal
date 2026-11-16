@@ -8,7 +8,7 @@ import { articleLabels, toExplorerItems, toGalleryVideos, videoLabels } from "@/
 import { PageHero } from "@/components/hero/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Icon } from "@/components/ui/icon";
-import { Arrow } from "@/components/ui/brand";
+import { Arrow, BrandMark } from "@/components/ui/brand";
 import { RichText } from "@/components/ui/rich-text";
 import { ServiceMiniCard } from "@/components/cards/service-cards";
 import { ArticleCard, ArticleRow } from "@/components/cards/article-cards";
@@ -100,7 +100,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
               </div>
             </div>
             <div className="lg lg--deep lg--sm absolute top-8 flex items-center gap-3 px-4 py-3 float-slow" style={{ insetInlineEnd: "-0.5rem" }}>
-              <span className="brand-mark !h-10 !w-10 !rounded-xl !text-xs">{t.doctor.monogram}</span>
+              <BrandMark className="!h-10 !w-10" />
               <span>
                 <span className="block font-display text-sm font-bold">{t.doctor.name}</span>
                 <span className="block text-xs text-aqua-300">{t.doctor.tagline}</span>

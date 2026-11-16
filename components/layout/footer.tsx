@@ -20,7 +20,7 @@ export function Footer({ t, locale, items }: { t: Dictionary; locale: Locale; it
       <div className="container-x grid grid-cols-2 gap-x-6 gap-y-12 pb-14 pt-16 lg:grid-cols-[1.4fr_0.8fr_1fr_1.2fr] lg:gap-10">
         <div className="col-span-2 max-w-sm lg:col-span-1">
           <Link href={localizeHref("/", locale)} className="brand !p-0 text-white">
-            <BrandMark monogram={t.doctor.monogram} />
+            <BrandMark />
             <span className="brand-text">
               <strong>{t.doctor.name}</strong>
               <small>{t.doctor.tagline}</small>

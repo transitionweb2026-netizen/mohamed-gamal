@@ -87,7 +87,7 @@ export default async function ArticlePage({ params }: PageProps<"/[lang]/article
             <div className="lg lg--ink overflow-hidden p-6" data-reveal>
               <div className="orb" style={{ width: 200, height: 200, insetInlineEnd: -60, top: -70, opacity: 0.5 }} aria-hidden />
               <div className="flex items-center gap-3">
-                <BrandMark monogram={t.doctor.monogram} />
+                <BrandMark />
                 <div>
                   <p className="font-display font-bold">{t.doctor.name}</p>
                   <p className="text-xs text-aqua-300">{t.doctor.role}</p>

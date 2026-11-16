@@ -80,7 +80,7 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <Navbar
           locale={locale}
           items={items}
-          doctor={{ name: t.doctor.name, tagline: t.doctor.tagline, monogram: t.doctor.monogram }}
+          doctor={{ name: t.doctor.name, tagline: t.doctor.tagline }}
           labels={{
             book: t.nav.book,
             openMenu: t.nav.openMenu,
