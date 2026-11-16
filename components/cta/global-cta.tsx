@@ -69,7 +69,7 @@ export function GlobalCta({ t, locale }: { t: Dictionary; locale: Locale }) {
             </div>
 
             <div className="relative min-h-[280px] p-3 sm:min-h-[340px] lg:p-4 lg:ps-0">
-              <div className="img-frame relative h-full min-h-[260px] rounded-[26px]">
+              <div className="img-frame parallax-img relative h-full min-h-[260px] rounded-[26px]">
                 <Image src={img.src} alt={img.alt[locale]} fill sizes="(min-width: 1024px) 480px, 100vw" className="object-cover object-[50%_30%]" />
                 <div
                   className="absolute inset-0"

@@ -1,12 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useId, useState } from "react";
 import { Clapperboard, Play, X } from "lucide-react";
 import { siteConfig } from "@/config/site";
 import { Arrow } from "@/components/ui/brand";
 import { YouTubeIcon } from "@/components/ui/brand-icons";
+import { Modal } from "@/components/ui/modal";
 
 export interface GalleryVideo {
   id: string;
@@ -26,15 +26,16 @@ interface Labels {
 }
 
 /**
- * Video cards + a branded modal player. With a YouTube ID the modal embeds
- * the video (privacy-enhanced youtube-nocookie domain); without one it shows
- * a "coming soon" state that links to the channel.
+ * Portrait (9:16, phone-sized) video cards + a vertical modal player.
+ * With a YouTube ID the modal embeds the video (privacy-enhanced
+ * youtube-nocookie domain — ideal for Shorts); without one it shows a
+ * "coming soon" state that links to the channel.
  */
 export function VideoGallery({
   videos,
   labels,
   dark = false,
-  className = "grid gap-6 sm:grid-cols-2 lg:grid-cols-3",
+  className = "mx-auto grid max-w-[1100px] gap-6 sm:grid-cols-2 lg:grid-cols-3",
 }: {
   videos: GalleryVideo[];
   labels: Labels;
@@ -42,42 +43,38 @@ export function VideoGallery({
   className?: string;
 }) {
   const [active, setActive] = useState<GalleryVideo | null>(null);
-  const returnFocus = useRef<HTMLElement | null>(null);
-
-  const open = (video: GalleryVideo, el: HTMLElement) => {
-    returnFocus.current = el;
-    setActive(video);
-  };
-  const close = useCallback(() => {
-    setActive(null);
-    returnFocus.current?.focus();
-  }, []);
+  const close = useCallback(() => setActive(null), []);
 
   return (
     <>
       <ul className={className}>
         {videos.map((video, i) => (
-          <li key={video.id} data-reveal style={{ "--rd": `${(i % 3) * 110}ms` } as React.CSSProperties}>
+          <li key={video.id} className="mx-auto w-full max-w-[380px] sm:max-w-none" data-reveal style={{ "--rd": `${(i % 3) * 120}ms` } as React.CSSProperties}>
             <button
               type="button"
-              onClick={(e) => open(video, e.currentTarget)}
-              className={`lg ${dark ? "lg--deep" : ""} lg-hover group flex h-full w-full flex-col p-2.5 text-start`}
+              onClick={() => setActive(video)}
+              className={`lg ${dark ? "lg--deep" : ""} lg-hover group block w-full p-2 text-start`}
               aria-haspopup="dialog"
             >
-              <span className="img-frame img-zoom relative block aspect-[16/10] w-full rounded-[20px]">
+              <span className="img-frame img-zoom relative block aspect-[9/16] w-full rounded-[24px]">
                 <Image
                   src={video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg` : video.img.src}
                   alt={video.img.alt}
                   fill
-                  sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw"
+                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 380px"
                   className="object-cover"
                 />
                 <span
-                  className="absolute inset-0 z-[1] transition-opacity duration-500 group-hover:opacity-70"
-                  style={{ background: "linear-gradient(180deg, rgb(0 41 51 / 0.1), rgb(0 41 51 / 0.25) 45%, rgb(0 22 28 / 0.8)), linear-gradient(200deg, rgb(73 217 244 / 0.28), transparent 50%)" }}
+                  className="absolute inset-0 z-[1]"
+                  style={{
+                    background:
+                      "linear-gradient(180deg, rgb(0 22 28 / 0.55) 0%, transparent 22%, transparent 45%, rgb(0 22 28 / 0.55) 68%, rgb(0 22 28 / 0.95) 100%), linear-gradient(200deg, rgb(73 217 244 / 0.25), transparent 45%)",
+                  }}
                   aria-hidden
                 />
-                <span className="absolute inset-x-3 top-3 z-[2] flex items-center justify-between">
+                {/* Phone-screen detail */}
+                <span className="absolute left-1/2 top-2.5 z-[2] h-1.5 w-14 -translate-x-1/2 rounded-full bg-white/40 shadow-[0_0_10px_rgb(73_217_244/0.6)]" aria-hidden />
+                <span className="absolute inset-x-4 top-6 z-[2] flex items-center justify-between">
                   <span className="chip chip--solid">{video.category}</span>
                   <span className="font-display text-sm font-bold text-white/90" dir="ltr">
                     {String(i + 1).padStart(2, "0")}
@@ -88,13 +85,13 @@ export function VideoGallery({
                     <Play size={20} fill="currentColor" aria-hidden />
                   </span>
                 </span>
-              </span>
-              <span className="flex flex-1 flex-col px-3 pb-3 pt-5">
-                <span className="font-display text-lg font-bold leading-snug">{video.title}</span>
-                <span className={`mt-2 line-clamp-2 text-sm leading-7 ${dark ? "text-white/70" : "text-ink-900/70"}`}>{video.description}</span>
-                <span className={`link-arrow mt-auto pt-4 ${dark ? "link-arrow--light" : ""}`}>
-                  {labels.watch}
-                  <Arrow size={16} />
+                <span className="absolute inset-x-0 bottom-0 z-[2] flex flex-col p-5 text-white">
+                  <span className="font-display text-lg font-bold leading-snug">{video.title}</span>
+                  <span className="mt-2 line-clamp-2 text-sm leading-6 text-white/75">{video.description}</span>
+                  <span className="link-arrow link-arrow--light mt-4 self-start">
+                    {labels.watch}
+                    <Arrow size={16} />
+                  </span>
                 </span>
               </span>
             </button>
@@ -108,79 +105,54 @@ export function VideoGallery({
 
 function VideoModal({ video, labels, onClose }: { video: GalleryVideo; labels: Labels; onClose: () => void }) {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
   const channel = siteConfig.socials.find((s) => s.platform === "youtube")?.href;
 
-  useEffect(() => {
-    closeRef.current?.focus();
-    const root = document.documentElement;
-    const prev = root.style.overflow;
-    root.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-      // Keep keyboard focus inside the dialog.
-      if (e.key === "Tab" && dialogRef.current) {
-        const nodes = dialogRef.current.querySelectorAll<HTMLElement>("button, a[href], iframe");
-        const first = nodes[0];
-        const last = nodes[nodes.length - 1];
-        if (e.shiftKey && document.activeElement === first) {
-          e.preventDefault();
-          last?.focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first?.focus();
-        }
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      root.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [onClose]);
-
-  return createPortal(
-    <div className="modal" onClick={onClose}>
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="modal__dialog lg lg--deep p-2.5 sm:p-3"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between gap-4 px-2 pb-3 pt-1 sm:px-3">
-          <div className="flex min-w-0 items-center gap-3">
-            <span className="chip chip--solid hidden sm:inline-flex">{video.category}</span>
-            <h2 id={titleId} className="truncate text-base font-bold text-white sm:text-lg">
-              {video.title}
-            </h2>
+  return (
+    <Modal onClose={onClose} labelledBy={titleId} className="modal__dialog--video lg lg--deep">
+      <div className="flex flex-col gap-3 p-2.5 md:flex-row md:items-stretch md:gap-2">
+        {/* Info panel (above the player on phones, beside it on wider screens) */}
+        <div className="flex flex-col px-2 pt-1 md:order-2 md:w-72 md:px-4 md:py-4">
+          <div className="flex items-center justify-between gap-3">
+            <span className="chip chip--solid">{video.category}</span>
+            <button type="button" data-autofocus onClick={onClose} className="nav-square flex-none" aria-label={labels.close}>
+              <X size={20} aria-hidden />
+            </button>
           </div>
-          <button ref={closeRef} type="button" onClick={onClose} className="nav-square flex-none" aria-label={labels.close}>
-            <X size={20} aria-hidden />
-          </button>
+          <h2 id={titleId} className="mt-3 text-lg font-bold leading-snug text-white md:mt-6 md:text-2xl">
+            {video.title}
+          </h2>
+          <p className="mt-2 hidden text-sm leading-7 text-white/70 md:block">{video.description}</p>
+          {channel && video.youtubeId ? (
+            <a href={channel} target="_blank" rel="noopener noreferrer" className="btn btn--glass btn--sm mt-auto hidden self-start md:inline-flex">
+              <span className="btn__icon">
+                <YouTubeIcon width={15} height={15} />
+              </span>
+              {labels.visitChannel}
+            </a>
+          ) : null}
         </div>
-        <div className="img-frame relative aspect-video w-full rounded-[20px] bg-ink-950">
+
+        {/* Vertical player */}
+        <div className="video-frame img-frame relative mx-auto rounded-[22px] bg-ink-950 md:order-1">
           {video.youtubeId ? (
             <iframe
               className="absolute inset-0 h-full w-full"
-              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0`}
+              src={`https://www.youtube-nocookie.com/embed/${video.youtubeId}?autoplay=1&rel=0&playsinline=1`}
               title={video.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
           ) : (
             <>
-              <Image src={video.img.src} alt="" fill sizes="1040px" className="scale-110 object-cover blur-md" />
-              <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 45%, rgb(0 41 51 / 0.55), rgb(0 22 28 / 0.9))" }} />
+              <Image src={video.img.src} alt="" fill loading="eager" sizes="440px" className="scale-110 object-cover blur-md" />
+              <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 45%, rgb(0 41 51 / 0.5), rgb(0 22 28 / 0.92))" }} />
               <div className="absolute inset-0 grid place-items-center p-6 text-center text-white">
-                <div className="flex max-w-md flex-col items-center">
+                <div className="flex flex-col items-center">
                   <span className="icon-tile icon-tile--lg">
                     <Clapperboard size={28} aria-hidden />
                   </span>
-                  <p className="mt-5 font-display text-xl font-bold sm:text-2xl">{labels.soonTitle}</p>
-                  <p className="mt-2 text-sm leading-7 text-white/75 sm:text-base">{labels.soonText}</p>
+                  <p className="mt-5 font-display text-xl font-bold">{labels.soonTitle}</p>
+                  <p className="mt-2 text-sm leading-7 text-white/75">{labels.soonText}</p>
                   {channel ? (
                     <a href={channel} target="_blank" rel="noopener noreferrer" className="btn btn--aqua btn--sm mt-6">
                       <span className="btn__icon">
@@ -194,9 +166,7 @@ function VideoModal({ video, labels, onClose }: { video: GalleryVideo; labels: L
             </>
           )}
         </div>
-        <p className="px-2 pb-1 pt-3 text-sm leading-7 text-white/70 sm:px-3">{video.description}</p>
       </div>
-    </div>,
-    document.body,
+    </Modal>
   );
 }

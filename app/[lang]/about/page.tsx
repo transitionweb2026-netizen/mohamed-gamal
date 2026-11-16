@@ -196,7 +196,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
       <section className="section bg-snow" style={{ "--snow-x": "0%" } as React.CSSProperties}>
         <div className="container-x grid items-center gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16">
           <div className="lg relative p-2.5" data-reveal="start">
-            <div className="img-frame relative aspect-[4/5] rounded-[22px]">
+            <div className="img-frame parallax-img relative aspect-[4/5] rounded-[22px]">
               <Image src={photos.balanceBoard.src} alt={photos.balanceBoard.alt[locale]} fill sizes="(min-width: 1024px) 460px, 100vw" className="object-cover" />
             </div>
             <div className="lg lg--deep absolute inset-x-6 bottom-6 p-5">
@@ -249,7 +249,7 @@ export default async function AboutPage({ params }: PageProps<"/[lang]/about">) 
       </section>
 
       {/* 9 ─ Statistics */}
-      <StatsBand eyebrow={a.stats.eyebrow} title={a.stats.title} stats={t.stats} tone="ink" />
+      <StatsBand eyebrow={a.stats.eyebrow} title={a.stats.title} stats={t.stats} photo="shoulderHands" locale={locale} tone="ink" />
     </>
   );
 }

@@ -31,6 +31,7 @@ export const en: Dictionary = {
     openMenu: "Open menu",
     closeMenu: "Close menu",
     switchTo: "العربية",
+    language: "Language",
     primary: "Main navigation",
   },
   common: {
@@ -54,6 +55,8 @@ export const en: Dictionary = {
     related: "Related articles",
     backToArticles: "Back to articles",
     questions: "Have a question?",
+    recommended: "Recommended articles",
+    explorerHint: "Hover an area to preview it, click to pin it",
   },
   panel: { follow: "Follow", call: "Call us", label: "Contact channels" },
   heroes: {

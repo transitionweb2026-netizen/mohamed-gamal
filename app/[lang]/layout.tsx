@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
 import { Alexandria, IBM_Plex_Sans_Arabic } from "next/font/google";
 import { siteConfig } from "@/config/site";
-import { localeSettings, locales, type Locale } from "@/i18n/config";
+import { localeSettings, locales } from "@/i18n/config";
 import { resolveLocale } from "@/i18n/dictionaries";
 import { Navbar, type NavItem } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { GlobalCta } from "@/components/cta/global-cta";
 import { RevealObserver } from "@/components/effects/reveal-observer";
 import { GlassPointer } from "@/components/effects/glass-pointer";
+import { ArticleModalProvider } from "@/components/articles/article-modal";
+import { toModalArticles } from "@/lib/content";
 import "../globals.css";
 
 const display = Alexandria({
@@ -54,11 +56,11 @@ export const viewport: Viewport = {
 };
 
 // Reveal animations start hidden; without JavaScript, show everything.
-const noScriptStyles = "[data-reveal]{opacity:1!important;transform:none!important}";
+const noScriptStyles =
+  "[data-reveal]{opacity:1!important;transform:none!important}[data-reveal] .img-frame{clip-path:none!important}[data-reveal] .img-frame img{scale:none!important;filter:none!important}[data-reveal] .icon-tile{scale:none!important;opacity:1!important}[data-reveal] .eyebrow::before{width:30px!important}";
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
   const { locale, t } = await resolveLocale(params);
-  const otherLocale: Locale = locale === "ar" ? "en" : "ar";
 
   const items: NavItem[] = [
     { href: "/", label: t.nav.home },
@@ -77,22 +79,32 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         </noscript>
         <Navbar
           locale={locale}
-          otherLocale={otherLocale}
           items={items}
           doctor={{ name: t.doctor.name, tagline: t.doctor.tagline, monogram: t.doctor.monogram }}
           labels={{
             book: t.nav.book,
             openMenu: t.nav.openMenu,
             closeMenu: t.nav.closeMenu,
-            switchTo: t.nav.switchTo,
+            language: t.nav.language,
             primary: t.nav.primary,
-            otherShort: localeSettings[otherLocale].short,
             whatsapp: t.cta.whatsapp,
             call: t.cta.call,
             whatsappMessage: t.cta.whatsappMessage,
           }}
         />
-        <main id="main">{children}</main>
+        <span className="scroll-progress" aria-hidden />
+        <ArticleModalProvider
+          articles={toModalArticles(t, locale)}
+          labels={{
+            close: t.common.close,
+            minRead: t.common.minRead,
+            readMore: t.common.readMore,
+            recommended: t.common.recommended,
+            disclaimer: t.common.disclaimer,
+          }}
+        >
+          <main id="main">{children}</main>
+        </ArticleModalProvider>
         <GlobalCta t={t} locale={locale} />
         <Footer t={t} locale={locale} items={items} />
         <RevealObserver />

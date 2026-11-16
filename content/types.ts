@@ -111,6 +111,7 @@ export interface Dictionary {
     openMenu: string;
     closeMenu: string;
     switchTo: string;
+    language: string;
     primary: string;
   };
   common: {
@@ -134,6 +135,8 @@ export interface Dictionary {
     related: string;
     backToArticles: string;
     questions: string;
+    recommended: string;
+    explorerHint: string;
   };
   panel: { follow: string; call: string; label: string };
   heroes: Record<"home" | "about" | "services" | "videos" | "articles" | "contact", HeroCopy>;

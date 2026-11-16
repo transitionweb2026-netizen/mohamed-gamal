@@ -5,10 +5,11 @@ import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CalendarCheck, Phone } from "lucide-react";
 import { siteConfig, telHref, whatsappHref } from "@/config/site";
-import { LOCALE_COOKIE, localizeHref, splitLocale, switchLocalePath, type Locale } from "@/i18n/config";
+import { localizeHref, splitLocale, type Locale } from "@/i18n/config";
 import { BrandMark } from "@/components/ui/brand";
 import { WhatsAppIcon } from "@/components/ui/brand-icons";
 import { SocialLinks } from "@/components/ui/social-links";
+import { LangToggle } from "./lang-toggle";
 
 export interface NavItem {
   href: string;
@@ -17,15 +18,13 @@ export interface NavItem {
 
 interface Props {
   locale: Locale;
-  otherLocale: Locale;
   items: NavItem[];
   labels: {
     book: string;
     openMenu: string;
     closeMenu: string;
-    switchTo: string;
+    language: string;
     primary: string;
-    otherShort: string;
     whatsapp: string;
     call: string;
     whatsappMessage: string;
@@ -35,7 +34,7 @@ interface Props {
 
 const useIsoLayoutEffect = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
-export function Navbar({ locale, otherLocale, items, labels, doctor }: Props) {
+export function Navbar({ locale, items, labels, doctor }: Props) {
   const pathname = usePathname();
   const { path } = splitLocale(pathname);
   const [scrolled, setScrolled] = useState(false);
@@ -86,11 +85,6 @@ export function Navbar({ locale, otherLocale, items, labels, doctor }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const rememberLocale = () => {
-    document.cookie = `${LOCALE_COOKIE}=${otherLocale}; path=/; max-age=31536000; samesite=lax`;
-  };
-
-  const otherHref = switchLocalePath(pathname, otherLocale);
 
   return (
     <>
@@ -128,16 +122,7 @@ export function Navbar({ locale, otherLocale, items, labels, doctor }: Props) {
           </nav>
 
           <div className="nav-actions">
-            <Link
-              href={otherHref}
-              onClick={rememberLocale}
-              hrefLang={otherLocale}
-              className="nav-square"
-              aria-label={labels.switchTo}
-              title={labels.switchTo}
-            >
-              {labels.otherShort}
-            </Link>
+            <LangToggle locale={locale} label={labels.language} />
             <Link href={localizeHref("/contact#booking", locale)} className="btn btn--aqua btn--sm hidden sm:inline-flex">
               <span className="btn__icon">
                 <CalendarCheck size={15} strokeWidth={2.2} aria-hidden />

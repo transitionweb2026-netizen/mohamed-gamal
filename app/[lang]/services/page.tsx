@@ -52,7 +52,7 @@ export default async function ServicesPage({ params }: PageProps<"/[lang]/servic
           <div className="relative mx-auto grid w-full max-w-xl grid-cols-[1.1fr_0.9fr] gap-4 lg:max-w-none" data-reveal="end">
             <div className="deco-rings absolute -z-[1]" style={{ width: 240, insetInlineStart: -60, top: -50 }} aria-hidden />
             <div className="lg row-span-2 p-2">
-              <div className="img-frame relative h-full min-h-[340px] rounded-[20px]">
+              <div className="img-frame parallax-img relative h-full min-h-[340px] rounded-[20px]">
                 <Image src={photos.ankleTable.src} alt={photos.ankleTable.alt[locale]} fill sizes="(min-width: 1024px) 320px, 55vw" className="object-cover" />
               </div>
             </div>

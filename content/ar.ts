@@ -31,6 +31,7 @@ export const ar: Dictionary = {
     openMenu: "فتح القائمة",
     closeMenu: "إغلاق القائمة",
     switchTo: "English",
+    language: "اللغة",
     primary: "التنقل الرئيسي",
   },
   common: {
@@ -54,6 +55,8 @@ export const ar: Dictionary = {
     related: "مقالات ذات صلة",
     backToArticles: "العودة إلى المقالات",
     questions: "لديك سؤال؟",
+    recommended: "مقالات مقترحة",
+    explorerHint: "مرّر المؤشر على أي منطقة للمعاينة، واضغط لتثبيتها",
   },
   panel: { follow: "تابعنا", call: "اتصل بنا", label: "وسائل التواصل" },
   heroes: {

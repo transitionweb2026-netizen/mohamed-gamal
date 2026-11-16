@@ -36,7 +36,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
         variant="home"
         actions={
           <div className="flex flex-wrap gap-3 pt-2">
-            <Link href={localizeHref("/contact#booking", locale)} className="btn btn--aqua">
+            <Link href={localizeHref("/contact#booking", locale)} className="btn btn--aqua btn--pulse">
               <span className="btn__icon">
                 <CalendarCheck size={17} aria-hidden />
               </span>
@@ -51,22 +51,38 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
           </div>
         }
         floating={
-          <div className="pointer-events-none absolute inset-y-0 hidden w-[40%] xl:block" style={{ insetInlineEnd: "4%" }} aria-hidden>
-            {h.heroBadges.map((b, i) => (
-              <div
-                key={b}
-                className={`lg lg--deep lg--sm absolute flex items-center gap-3 px-4 py-3 ${i === 1 ? "float-slower" : "float-slow"}`}
-                style={{ top: `${30 + i * 15}%`, insetInlineEnd: `${[6, 34, 12][i]}%`, animationDelay: `${i * 1.3}s` }}
-              >
-                <span className="icon-tile icon-tile--sm">
-                  <Icon name={(["Route", "TrendingUp", "House"] as const)[i]} size={18} />
-                </span>
-                <span className="text-sm font-semibold">{b}</span>
-              </div>
-            ))}
+          <div className="hero-stack pointer-events-none absolute top-1/2 hidden -translate-y-1/2 xl:block" style={{ insetInlineEnd: "max(2.5rem, calc((100vw - 1280px) / 2 + 2.5rem))" }} aria-hidden>
+            <div className="float-slow flex flex-col gap-4">
+              <span className="hero-stack__line" />
+              {h.heroBadges.map((b, i) => (
+                <div key={b} className="hero-stack__item lg lg--deep lg--sm flex w-72 items-center gap-3 px-4 py-3.5" style={{ animationDelay: `${0.9 + i * 0.15}s` }}>
+                  <span className="icon-tile icon-tile--sm">
+                    <Icon name={(["Route", "TrendingUp", "House"] as const)[i]} size={18} />
+                  </span>
+                  <span className="text-sm font-semibold">{b}</span>
+                  <span className="dot-live ms-auto" />
+                </div>
+              ))}
+            </div>
           </div>
         }
       />
+
+      {/* Kinetic services ticker */}
+      <div className="marquee" aria-hidden>
+        <div className="marquee__track">
+          {[0, 1].map((copy) => (
+            <div key={copy} className="marquee__group">
+              {t.services.map((svc) => (
+                <span key={`${copy}-${svc.slug}`} className="marquee__item">
+                  <Icon name={svc.icon} size={18} />
+                  {svc.title}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* 2 ─ Introduction */}
       <section className="section bg-snow">
@@ -74,7 +90,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
           <div className="relative mx-auto w-full max-w-xl lg:max-w-none" data-reveal="start">
             <div className="deco-rings absolute -z-[1]" style={{ width: 260, insetInlineStart: -70, top: -60 }} aria-hidden />
             <div className="lg overflow-hidden p-2.5 lg:me-16">
-              <div className="img-frame relative aspect-[4/5] rounded-[22px]">
+              <div className="img-frame parallax-img relative aspect-[4/5] rounded-[22px]">
                 <Image src={photos.bandFoot.src} alt={photos.bandFoot.alt[locale]} fill sizes="(min-width: 1024px) 520px, 100vw" className="object-cover" />
               </div>
             </div>
@@ -189,7 +205,7 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
               <p className="lead mt-4">{h.why.text}</p>
             </div>
             <div className="lg lg--deep mt-8 p-2.5" data-reveal style={{ "--rd": "120ms" } as React.CSSProperties}>
-              <div className="img-frame img-tint relative aspect-[16/10] rounded-[20px]">
+              <div className="img-frame img-tint parallax-img relative aspect-[16/10] rounded-[20px]">
                 <Image src={photos.shoulderHands.src} alt={photos.shoulderHands.alt[locale]} fill sizes="(min-width: 1024px) 520px, 100vw" className="object-cover" />
               </div>
             </div>
@@ -222,12 +238,12 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
       <section className="section bg-snow" style={{ "--snow-x": "0%" } as React.CSSProperties}>
         <div className="container-x">
           <SectionHeading eyebrow={h.specialties.eyebrow} title={h.specialties.title} text={h.specialties.text} />
-          <SpecialtyExplorer groups={toExplorerItems(t, locale)} cta={t.common.allServices} href={localizeHref("/services", locale)} />
+          <SpecialtyExplorer groups={toExplorerItems(t, locale)} cta={t.common.allServices} href={localizeHref("/services", locale)} hint={t.common.explorerHint} />
         </div>
       </section>
 
       {/* 6 ─ Statistics */}
-      <StatsBand eyebrow={h.stats.eyebrow} title={h.stats.title} stats={t.stats} />
+      <StatsBand eyebrow={h.stats.eyebrow} title={h.stats.title} stats={t.stats} photo="kneeHands" locale={locale} />
 
       {/* 7 ─ Treatment journey */}
       <section className="section bg-ice">
@@ -274,10 +290,11 @@ export default async function HomePage({ params }: PageProps<"/[lang]">) {
               </Link>
             }
           />
+          {/* Featured card + five rows that together match its height. */}
           <div className="mt-12 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
             <ArticleCard article={t.articles[0]} locale={locale} labels={articleLabels(t)} tone="ink" />
-            <div className="grid content-start gap-4">
-              {t.articles.slice(1, 4).map((a, i) => (
+            <div className="grid gap-4 lg:grid-rows-5">
+              {t.articles.slice(1, 6).map((a, i) => (
                 <ArticleRow key={a.slug} article={a} locale={locale} labels={articleLabels(t)} delay={i * 90} />
               ))}
             </div>
