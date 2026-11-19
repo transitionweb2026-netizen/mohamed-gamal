@@ -4,21 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { createContext, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 import { CalendarDays, Clock3, Info, Sparkles, X } from "lucide-react";
-import type { ArticleBlock } from "@/content/types";
+import type { ArticleView } from "@/lib/cms/view";
+import { RichDocView } from "@/components/ui/rich-doc";
 import { Modal } from "@/components/ui/modal";
 import { Arrow } from "@/components/ui/brand";
 
-export interface ModalArticle {
-  slug: string;
-  category: string;
-  title: string;
-  excerpt: string;
-  dateLabel?: string;
-  date?: string;
-  minutes: number;
-  img: { src: string; alt: string };
-  body: ArticleBlock[];
-}
+/** An article as the popup needs it (the website's ArticleView). */
+export type ModalArticle = ArticleView;
 
 export interface ArticleModalLabels {
   close: string;
@@ -96,7 +88,7 @@ function ArticleModal({
         <article key={article.slug} className="animate-[page-in_0.5s_ease_both]">
           {/* Cover */}
           <div className="relative aspect-[16/9] w-full overflow-hidden sm:aspect-[16/8]">
-            <Image src={article.img.src} alt={article.img.alt} fill loading="eager" sizes="(min-width: 920px) 900px, 100vw" className="animate-[hero-zoom_8s_var(--ease)_both] object-cover" />
+            {article.cover ? <Image src={article.cover.src} alt={article.cover.alt} fill loading="eager" sizes="(min-width: 920px) 900px, 100vw" className="animate-[hero-zoom_8s_var(--ease)_both] object-cover" /> : null}
             <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgb(0 41 51 / 0.15), transparent 40%, rgb(0 22 28 / 0.85))" }} aria-hidden />
             <div className="absolute inset-x-5 bottom-5 flex flex-wrap items-center gap-2 sm:inset-x-10">
               <span className="chip chip--solid">{article.category}</span>
@@ -107,7 +99,7 @@ function ArticleModal({
               {article.dateLabel ? (
                 <span className="chip chip--dark">
                   <CalendarDays size={13} aria-hidden />
-                  <time dateTime={article.date}>{article.dateLabel}</time>
+                  <time dateTime={article.date ?? undefined}>{article.dateLabel}</time>
                 </span>
               ) : null}
             </div>
@@ -119,20 +111,7 @@ function ArticleModal({
               {article.title}
             </h2>
             <p className="lead mt-3">{article.excerpt}</p>
-            <div className="prose-brand mt-6 border-t border-aqua-500/25 pt-6">
-              {article.body.map((block, i) => {
-                if (block.type === "h") return <h3 key={i} className="!mt-8 text-xl font-bold">{block.text}</h3>;
-                if (block.type === "list")
-                  return (
-                    <ul key={i}>
-                      {block.items.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  );
-                return <p key={i}>{block.text}</p>;
-              })}
-            </div>
+            <RichDocView doc={article.body} className="mt-6 border-t border-aqua-500/25 pt-6" />
             <aside className="mt-8 flex items-start gap-3 rounded-2xl bg-aqua-50 p-4 text-sm leading-7 text-ink-900/75 shadow-[inset_0_0_0_1px_rgb(73_217_244/0.5)]">
               <Info size={20} className="mt-0.5 flex-none text-aqua-700" aria-hidden />
               {labels.disclaimer}
@@ -152,7 +131,7 @@ function ArticleModal({
                 <li key={r.slug}>
                   <button type="button" onClick={() => onSelect(r.slug)} className="lg lg-hover group flex h-full w-full flex-col p-2 text-start">
                     <span className="img-frame img-zoom relative block aspect-[4/3] w-full rounded-[18px]">
-                      <Image src={r.img.src} alt="" fill sizes="(min-width: 640px) 260px, 100vw" className="object-cover" />
+                      {r.cover ? <Image src={r.cover.src} alt="" fill sizes="(min-width: 640px) 260px, 100vw" className="object-cover" /> : null}
                     </span>
                     <span className="flex flex-1 flex-col px-2 pb-2 pt-3">
                       <span className="text-xs font-semibold text-aqua-700">{r.category}</span>

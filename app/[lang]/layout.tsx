@@ -1,15 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Alexandria, IBM_Plex_Sans_Arabic } from "next/font/google";
-import { siteConfig } from "@/config/site";
+import Link from "next/link";
+import { Eye } from "lucide-react";
 import { localeSettings, locales } from "@/i18n/config";
-import { resolveLocale } from "@/i18n/dictionaries";
-import { Navbar, type NavItem } from "@/components/layout/navbar";
+import { pageMetadata, siteFor, siteOrigin } from "@/lib/cms/page";
+import type { Img } from "@/lib/cms/view";
+import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { SiteProvider } from "@/components/layout/site-context";
 import { GlobalCta } from "@/components/cta/global-cta";
 import { RevealObserver } from "@/components/effects/reveal-observer";
 import { GlassPointer } from "@/components/effects/glass-pointer";
 import { ArticleModalProvider } from "@/components/articles/article-modal";
-import { toModalArticles } from "@/lib/content";
 import "../globals.css";
 
 const display = Alexandria({
@@ -31,21 +33,17 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
-  const { locale, t } = await resolveLocale(params);
+  const { site } = await siteFor(params);
+  const { identity } = site;
+  const base = pageMetadata(site, undefined, "/");
   return {
-    metadataBase: new URL(siteConfig.url),
-    title: { default: t.meta.title, template: `%s | ${t.meta.siteName}` },
-    description: t.meta.description,
-    applicationName: t.meta.siteName,
-    alternates: { languages: { ar: "/ar", en: "/en" } },
-    openGraph: {
-      type: "website",
-      locale: localeSettings[locale].ogLocale,
-      siteName: t.meta.siteName,
-      title: t.meta.title,
-      description: t.meta.description,
-      images: [{ url: "/images/photos/pexels-20860582.jpg", width: 2400, height: 1600 }],
-    },
+    ...base,
+    metadataBase: new URL(siteOrigin(site)),
+    title: { default: identity.defaultTitle || identity.siteName, template: `%s | ${identity.siteName}` },
+    applicationName: identity.siteName,
+    icons: identity.favicon
+      ? { icon: [{ url: identity.favicon.src, type: identity.favicon.type }], apple: [{ url: identity.favicon.src }] }
+      : { icon: [{ url: "/favicon.png", type: "image/png" }], apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }] },
     formatDetection: { telephone: false },
   };
 }
@@ -60,16 +58,8 @@ const noScriptStyles =
   "[data-reveal]{opacity:1!important;transform:none!important}[data-reveal] .img-frame{clip-path:none!important}[data-reveal] .img-frame img{scale:none!important;filter:none!important}[data-reveal] .icon-tile{scale:none!important;opacity:1!important}[data-reveal] .eyebrow::before{width:30px!important}";
 
 export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
-  const { locale, t } = await resolveLocale(params);
-
-  const items: NavItem[] = [
-    { href: "/", label: t.nav.home },
-    { href: "/about", label: t.nav.about },
-    { href: "/services", label: t.nav.services },
-    { href: "/videos", label: t.nav.videos },
-    { href: "/articles", label: t.nav.articles },
-    { href: "/contact", label: t.nav.contact },
-  ];
+  const { locale, site } = await siteFor(params);
+  const { ui, identity, contact } = site;
 
   return (
     <html lang={locale} dir={localeSettings[locale].dir} className={`${display.variable} ${body.variable}`} data-scroll-behavior="smooth">
@@ -77,39 +67,50 @@ export default async function RootLayout({ children, params }: LayoutProps<"/[la
         <noscript>
           <style>{noScriptStyles}</style>
         </noscript>
-        <Navbar
-          locale={locale}
-          items={items}
-          doctor={{ name: t.doctor.name, tagline: t.doctor.tagline }}
-          labels={{
-            book: t.nav.book,
-            openMenu: t.nav.openMenu,
-            closeMenu: t.nav.closeMenu,
-            language: t.nav.language,
-            primary: t.nav.primary,
-            whatsapp: t.cta.whatsapp,
-            call: t.cta.call,
-            whatsappMessage: t.cta.whatsappMessage,
-          }}
-        />
-        <span className="scroll-progress" aria-hidden />
-        <ArticleModalProvider
-          articles={toModalArticles(t, locale)}
-          labels={{
-            close: t.common.close,
-            minRead: t.common.minRead,
-            readMore: t.common.readMore,
-            recommended: t.common.recommended,
-            disclaimer: t.common.disclaimer,
+        <SiteProvider
+          value={{
+            locale,
+            notFound: { title: ui["notFound.title"], text: ui["notFound.text"], action: ui["notFound.action"] },
+            panel: { follow: ui["panel.follow"], call: ui["panel.call"], label: ui["panel.label"] },
+            socials: site.socials,
+            phones: contact.phones,
+            image: site.pages.services?.sections.find((s) => s.key === "hero")?.content.image as Img | null,
           }}
         >
-          <main id="main">{children}</main>
-        </ArticleModalProvider>
-        <GlobalCta t={t} locale={locale} />
-        <Footer t={t} locale={locale} items={items} />
+          <Navbar
+            locale={locale}
+            items={site.nav.header}
+            bookCta={site.global.navbar?.bookCta ?? null}
+            doctor={{ name: identity.doctorName, tagline: identity.tagline, monogram: identity.monogram, logo: identity.logo }}
+            contact={{ phones: contact.phones, whatsappDigits: contact.whatsappDigits, whatsappMessage: contact.whatsappMessage, whatsappLabel: site.global.cta?.whatsappLabel ?? "WhatsApp" }}
+            socials={site.socials}
+            labels={{ openMenu: ui["nav.openMenu"], closeMenu: ui["nav.closeMenu"], language: ui["nav.language"], primary: ui["nav.primary"], call: ui["panel.call"] }}
+          />
+          <span className="scroll-progress" aria-hidden />
+          <ArticleModalProvider
+            articles={site.articles}
+            labels={{ close: ui["common.close"], minRead: ui["common.minRead"], readMore: ui["common.readMore"], recommended: ui["common.recommended"], disclaimer: ui["common.disclaimer"] }}
+          >
+            <main id="main">{children}</main>
+          </ArticleModalProvider>
+          <GlobalCta site={site} />
+          <Footer site={site} />
+        </SiteProvider>
+        {site.preview ? (
+          <div className="preview-banner" role="status">
+            <div>
+              <Eye size={16} aria-hidden />
+              <span>{locale === "ar" ? "وضع المعاينة — تظهر التعديلات غير المنشورة" : "Preview mode — unpublished changes are shown"}</span>
+              <Link href="/admin/preview/exit" prefetch={false} className="btn btn--ink btn--sm">
+                {locale === "ar" ? "إنهاء المعاينة" : "Exit preview"}
+              </Link>
+            </div>
+          </div>
+        ) : null}
         <RevealObserver />
         <GlassPointer />
       </body>
     </html>
   );
 }
+

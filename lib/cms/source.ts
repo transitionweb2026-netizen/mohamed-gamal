@@ -1,0 +1,58 @@
+import "server-only";
+import { draftMode } from "next/headers";
+import { cache } from "react";
+import { buildBundledSnapshot } from "./bundled";
+import { buildSiteView } from "./reader";
+import type { CmsSnapshot, Locale } from "./types";
+import type { SiteView } from "./view";
+import { isSupabaseConfigured, storagePublicBaseUrl } from "@/lib/supabase/env";
+import { publicSupabase } from "@/lib/supabase/public";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+/**
+ * Where the website's content comes from:
+ *  - Supabase (when NEXT_PUBLIC_SUPABASE_URL and the publishable key are set):
+ *    one `cms_snapshot()` call per render, published content only — or, for a
+ *    signed-in administrator in preview mode, including drafts;
+ *  - otherwise the content bundled in content/, so the website works before
+ *    the CMS is connected.
+ *
+ * Availability: pages are static and rebuilt when content is published. If
+ * Supabase cannot be reached during a rebuild, Next.js keeps serving the last
+ * good page (the error is logged and the rebuild retried on a later request),
+ * so a short outage never takes the website down or shows stale bundled
+ * content. A transient failure is retried once before giving up.
+ */
+export const contentSource: "supabase" | "bundled" = isSupabaseConfigured ? "supabase" : "bundled";
+
+let bundled: CmsSnapshot | undefined;
+
+async function fetchSnapshot(preview: boolean): Promise<CmsSnapshot> {
+  const client = preview ? await createSupabaseServerClient() : publicSupabase!;
+  let lastError = "";
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const { data, error } = await client.rpc("cms_snapshot", { p_preview: preview });
+    if (!error) {
+      const snapshot = data as CmsSnapshot | null;
+      if (!snapshot?.settings) {
+        throw new Error("CMS: Supabase is connected but holds no website content yet. Import supabase/seed/content.sql (see docs/cms/SETUP.md).");
+      }
+      return snapshot;
+    }
+    lastError = error.message;
+    await new Promise((resolve) => setTimeout(resolve, 400));
+  }
+  throw new Error(`CMS: could not load the website content from Supabase (${lastError}).`);
+}
+
+export const getSnapshot = cache(async (): Promise<CmsSnapshot> => {
+  if (!isSupabaseConfigured) {
+    bundled ??= buildBundledSnapshot();
+    return bundled;
+  }
+  const preview = (await draftMode()).isEnabled;
+  return fetchSnapshot(preview);
+});
+
+/** The whole website resolved for one language (one snapshot per request). */
+export const getSite = cache(async (locale: Locale): Promise<SiteView> => buildSiteView(await getSnapshot(), locale, storagePublicBaseUrl));

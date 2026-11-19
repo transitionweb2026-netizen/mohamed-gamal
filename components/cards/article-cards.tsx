@@ -1,31 +1,27 @@
 import Image from "next/image";
 import { CalendarDays, Clock3 } from "lucide-react";
-import { photos } from "@/content/media";
-import type { Article } from "@/content/types";
 import { localizeHref, type Locale } from "@/i18n/config";
-import { formatDate, readingMinutes } from "@/lib/articles";
+import type { ArticleView } from "@/lib/cms/view";
 import { ArticleLink } from "@/components/articles/article-modal";
 import { Arrow } from "@/components/ui/brand";
-
-export { readingMinutes };
 
 interface MetaLabels {
   readMore: string;
   minRead: string;
 }
 
-function Meta({ article, locale, labels, dark }: { article: Article; locale: Locale; labels: MetaLabels; dark?: boolean }) {
+function Meta({ article, labels, dark }: { article: ArticleView; labels: MetaLabels; dark?: boolean }) {
   return (
     <div className={`flex flex-wrap items-center gap-x-4 gap-y-1 text-xs ${dark ? "text-white/65" : "text-ink-900/60"}`}>
       {article.date ? (
         <span className="inline-flex items-center gap-1.5">
           <CalendarDays size={14} className={dark ? "text-aqua-400" : "text-aqua-700"} aria-hidden />
-          <time dateTime={article.date}>{formatDate(article.date, locale)}</time>
+          <time dateTime={article.date}>{article.dateLabel}</time>
         </span>
       ) : null}
       <span className="inline-flex items-center gap-1.5">
         <Clock3 size={14} className={dark ? "text-aqua-400" : "text-aqua-700"} aria-hidden />
-        {readingMinutes(article)} {labels.minRead}
+        {article.minutes} {labels.minRead}
       </span>
     </div>
   );
@@ -44,14 +40,14 @@ export function ArticleCard({
   delay = 0,
   className = "",
 }: {
-  article: Article;
+  article: ArticleView;
   locale: Locale;
   labels: MetaLabels;
   tone?: "aqua" | "ink";
   delay?: number;
   className?: string;
 }) {
-  const img = photos[article.photo];
+  const img = article.cover;
   const dark = tone === "ink";
   const href = localizeHref(`/articles/${article.slug}`, locale);
   return (
@@ -61,13 +57,13 @@ export function ArticleCard({
       style={{ "--rd": `${delay}ms` } as React.CSSProperties}
     >
       <ArticleLink slug={article.slug} href={href} tabIndex={-1} aria-hidden className="img-frame img-zoom relative block aspect-[16/10] rounded-[20px]">
-        <Image src={img.src} alt="" fill sizes="(min-width: 1024px) 560px, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+        {img ? <Image src={img.src} alt="" fill sizes="(min-width: 1024px) 560px, (min-width: 640px) 50vw, 100vw" className="object-cover" style={img.position ? { objectPosition: img.position } : undefined} /> : null}
         <span className={`chip ${dark ? "chip--solid" : ""} absolute top-3 z-[2]`} style={{ insetInlineStart: "0.75rem" }}>
           {article.category}
         </span>
       </ArticleLink>
       <div className="flex flex-1 flex-col px-3.5 pb-4 pt-5 sm:px-4">
-        <Meta article={article} locale={locale} labels={labels} dark={dark} />
+        <Meta article={article} labels={labels} dark={dark} />
         <h3 className="mt-3 text-lg font-bold leading-snug">
           <ArticleLink slug={article.slug} href={href} className="block transition-colors hover:text-aqua-600">
             {article.title}
@@ -84,8 +80,8 @@ export function ArticleCard({
 }
 
 /** Horizontal compact card (home page list, related articles). Stretches to fill its grid row. */
-export function ArticleRow({ article, locale, labels, delay = 0 }: { article: Article; locale: Locale; labels: MetaLabels; delay?: number }) {
-  const img = photos[article.photo];
+export function ArticleRow({ article, locale, labels, delay = 0 }: { article: ArticleView; locale: Locale; labels: MetaLabels; delay?: number }) {
+  const img = article.cover;
   return (
     <ArticleLink
       slug={article.slug}
@@ -95,7 +91,7 @@ export function ArticleRow({ article, locale, labels, delay = 0 }: { article: Ar
       style={{ "--rd": `${delay}ms` } as React.CSSProperties}
     >
       <span className="img-frame img-zoom relative block w-28 flex-none rounded-[18px] sm:w-36">
-        <Image src={img.src} alt="" fill sizes="144px" className="object-cover" />
+        {img ? <Image src={img.src} alt="" fill sizes="144px" className="object-cover" style={img.position ? { objectPosition: img.position } : undefined} /> : null}
       </span>
       <span className="flex min-w-0 flex-col justify-center py-1 pe-2">
         <span className="text-xs font-semibold text-aqua-700">{article.category}</span>
@@ -110,13 +106,13 @@ export function ArticleRow({ article, locale, labels, delay = 0 }: { article: Ar
 }
 
 /** The one dominant featured article — split composition in teal-ink glass. */
-export function FeaturedArticle({ article, locale, labels }: { article: Article; locale: Locale; labels: MetaLabels & { featured: string } }) {
-  const img = photos[article.photo];
+export function FeaturedArticle({ article, locale, labels }: { article: ArticleView; locale: Locale; labels: MetaLabels & { featured: string } }) {
+  const img = article.cover;
   const href = localizeHref(`/articles/${article.slug}`, locale);
   return (
     <article className="lg lg--ink group grid overflow-hidden p-2.5 lg:grid-cols-[1.15fr_1fr]" data-reveal="scale">
       <ArticleLink slug={article.slug} href={href} tabIndex={-1} aria-hidden className="img-frame img-zoom parallax-img relative block min-h-[260px] rounded-[26px] sm:min-h-[380px]">
-        <Image src={img.src} alt="" fill sizes="(min-width: 1024px) 680px, 100vw" className="object-cover" />
+        {img ? <Image src={img.src} alt="" fill sizes="(min-width: 1024px) 680px, 100vw" className="object-cover" style={img.position ? { objectPosition: img.position } : undefined} /> : null}
         <div className="absolute inset-0 z-[1]" style={{ background: "linear-gradient(200deg, rgb(73 217 244 / 0.3), transparent 50%)" }} aria-hidden />
         <span className="chip chip--solid absolute top-4 z-[2]" style={{ insetInlineStart: "1rem" }}>
           {labels.featured}
@@ -128,7 +124,7 @@ export function FeaturedArticle({ article, locale, labels }: { article: Article;
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="chip chip--dark">{article.category}</span>
-          <Meta article={article} locale={locale} labels={labels} dark />
+          <Meta article={article} labels={labels} dark />
         </div>
         <h2 className="mt-5 text-[clamp(1.6rem,3vw,2.5rem)] font-bold leading-tight text-white">
           <ArticleLink slug={article.slug} href={href} className="block transition-colors hover:text-aqua-300">

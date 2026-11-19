@@ -1,5 +1,5 @@
 import { Quote, UserRound } from "lucide-react";
-import type { Testimonial } from "@/content/types";
+import type { TestimonialView as Testimonial } from "@/lib/cms/view";
 import { RichText } from "@/components/ui/rich-text";
 
 /** ⚠ Testimonial content is placeholder until real, consented reviews are supplied. */

@@ -1,7 +1,5 @@
 import Image from "next/image";
-import { photos, type PhotoKey } from "@/content/media";
-import type { Stat } from "@/content/types";
-import type { Locale } from "@/i18n/config";
+import type { Img, StatView } from "@/lib/cms/view";
 import { Icon } from "@/components/ui/icon";
 import { StatValue } from "./stat-value";
 
@@ -15,19 +13,17 @@ export function StatsBand({
   eyebrow,
   title,
   stats,
-  photo,
-  locale,
+  image,
   tone = "aqua",
 }: {
   eyebrow: string;
   title: string;
-  stats: Stat[];
-  photo: PhotoKey;
-  locale: Locale;
+  stats: StatView[];
+  image: Img | null;
   tone?: "aqua" | "ink";
 }) {
   const ink = tone === "ink";
-  const img = photos[photo];
+  const img = image;
   return (
     <section className={`section ${ink ? "bg-ink on-dark" : "bg-aqua"} !py-[clamp(4rem,7vw,6rem)]`}>
       <div
@@ -39,7 +35,7 @@ export function StatsBand({
         {/* Image with the section title on top of it */}
         <figure className={`lg ${ink ? "lg--deep" : "lg--clear"} relative min-h-[340px] overflow-hidden p-2.5`} data-reveal="start">
           <div className="img-frame parallax-img absolute inset-2.5 rounded-[22px]">
-            <Image src={img.src} alt={img.alt[locale]} fill sizes="(min-width: 1024px) 620px, 100vw" className="object-cover" />
+            {img ? <Image src={img.src} alt={img.alt} fill sizes="(min-width: 1024px) 620px, 100vw" className="object-cover" style={img.position ? { objectPosition: img.position } : undefined} /> : null}
             <div className="absolute inset-0 z-[1]" style={{ background: "linear-gradient(180deg, rgb(0 22 28 / 0.7), rgb(0 41 51 / 0.15) 55%, rgb(73 217 244 / 0.2))" }} aria-hidden />
           </div>
           <figcaption className="lg lg--deep relative z-[2] m-2 p-5 sm:m-3 sm:p-6">

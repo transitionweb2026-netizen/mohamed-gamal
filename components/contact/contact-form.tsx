@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CheckCircle2, Lock } from "lucide-react";
-import { whatsappHref } from "@/config/site";
+import { whatsappLink } from "@/lib/cms/links";
 import { WhatsAppIcon } from "@/components/ui/brand-icons";
 
 export interface ContactFormLabels {
@@ -25,7 +25,7 @@ export interface ContactFormLabels {
  * No backend: on submit the form composes a WhatsApp message from the
  * visitor's details and opens it, so nothing is stored on the website.
  */
-export function ContactForm({ labels }: { labels: ContactFormLabels }) {
+export function ContactForm({ labels, whatsappDigits }: { labels: ContactFormLabels; whatsappDigits: string }) {
   const [errors, setErrors] = useState<Record<string, boolean>>({});
   const [sent, setSent] = useState(false);
 
@@ -43,7 +43,7 @@ export function ContactForm({ labels }: { labels: ContactFormLabels }) {
       return;
     }
     const text = [labels.greeting, `${labels.name}: ${name}`, `${labels.phone}: ${phone}`, `${labels.reason}: ${reason}`, message].filter(Boolean).join("\n");
-    window.open(whatsappHref(text), "_blank", "noopener,noreferrer");
+    window.open(whatsappLink(whatsappDigits, text), "_blank", "noopener,noreferrer");
     setSent(true);
   };
 

@@ -3,18 +3,18 @@
 import Image from "next/image";
 import { useCallback, useId, useState } from "react";
 import { Clapperboard, Play, X } from "lucide-react";
-import { siteConfig } from "@/config/site";
+import type { VideoView } from "@/lib/cms/view";
 import { Arrow } from "@/components/ui/brand";
 import { YouTubeIcon } from "@/components/ui/brand-icons";
 import { Modal } from "@/components/ui/modal";
 
-export interface GalleryVideo {
-  id: string;
-  youtubeId: string;
-  title: string;
-  description: string;
-  category: string;
-  img: { src: string; alt: string };
+export type GalleryVideo = VideoView;
+
+/** Thumbnail: the uploaded poster, else the YouTube thumbnail. */
+function thumbOf(video: GalleryVideo): { src: string; alt: string; position?: string } | null {
+  if (video.poster) return video.poster;
+  if (video.youtubeId) return { src: `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`, alt: video.title };
+  return null;
 }
 
 interface Labels {
@@ -26,20 +26,23 @@ interface Labels {
 }
 
 /**
- * Portrait (9:16, phone-sized) video cards + a vertical modal player.
- * With a YouTube ID the modal embeds the video (privacy-enhanced
- * youtube-nocookie domain — ideal for Shorts); without one it shows a
- * "coming soon" state that links to the channel.
+ * Portrait (9:16, phone-sized) video cards + a vertical modal player. It
+ * plays a YouTube video (privacy-enhanced youtube-nocookie domain — ideal
+ * for Shorts), an uploaded file or an external video address; without any,
+ * it shows a "coming soon" state that links to the channel.
  */
 export function VideoGallery({
   videos,
   labels,
   dark = false,
+  channel,
   className = "mx-auto grid max-w-[1100px] gap-6 sm:grid-cols-2 lg:grid-cols-3",
 }: {
   videos: GalleryVideo[];
   labels: Labels;
   dark?: boolean;
+  /** YouTube channel address (Social media). */
+  channel?: string;
   className?: string;
 }) {
   const [active, setActive] = useState<GalleryVideo | null>(null);
@@ -57,13 +60,16 @@ export function VideoGallery({
               aria-haspopup="dialog"
             >
               <span className="img-frame img-zoom relative block aspect-[9/16] w-full rounded-[24px]">
-                <Image
-                  src={video.youtubeId ? `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg` : video.img.src}
-                  alt={video.img.alt}
-                  fill
-                  sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 380px"
-                  className="object-cover"
-                />
+                {thumbOf(video) ? (
+                  <Image
+                    src={thumbOf(video)!.src}
+                    alt={thumbOf(video)!.alt}
+                    fill
+                    sizes="(min-width: 1024px) 360px, (min-width: 640px) 45vw, 380px"
+                    className="object-cover"
+                    style={thumbOf(video)!.position ? { objectPosition: thumbOf(video)!.position } : undefined}
+                  />
+                ) : null}
                 <span
                   className="absolute inset-0 z-[1]"
                   style={{
@@ -98,14 +104,15 @@ export function VideoGallery({
           </li>
         ))}
       </ul>
-      {active ? <VideoModal video={active} labels={labels} onClose={close} /> : null}
+      {active ? <VideoModal video={active} labels={labels} channel={channel} onClose={close} /> : null}
     </>
   );
 }
 
-function VideoModal({ video, labels, onClose }: { video: GalleryVideo; labels: Labels; onClose: () => void }) {
+function VideoModal({ video, labels, channel, onClose }: { video: GalleryVideo; labels: Labels; channel?: string; onClose: () => void }) {
   const titleId = useId();
-  const channel = siteConfig.socials.find((s) => s.platform === "youtube")?.href;
+  const thumb = thumbOf(video);
+  const playable = !!video.youtubeId || !!video.fileUrl;
 
   return (
     <Modal onClose={onClose} labelledBy={titleId} className="modal__dialog--video lg lg--deep">
@@ -122,7 +129,7 @@ function VideoModal({ video, labels, onClose }: { video: GalleryVideo; labels: L
             {video.title}
           </h2>
           <p className="mt-2 hidden text-sm leading-7 text-white/70 md:block">{video.description}</p>
-          {channel && video.youtubeId ? (
+          {channel && playable ? (
             <a href={channel} target="_blank" rel="noopener noreferrer" className="btn btn--glass btn--sm mt-auto hidden self-start md:inline-flex">
               <span className="btn__icon">
                 <YouTubeIcon width={15} height={15} />
@@ -142,9 +149,13 @@ function VideoModal({ video, labels, onClose }: { video: GalleryVideo; labels: L
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
+          ) : video.fileUrl ? (
+            <video className="absolute inset-0 h-full w-full bg-ink-950 object-contain" src={video.fileUrl} poster={thumb?.src} controls autoPlay playsInline preload="metadata">
+              <track kind="captions" />
+            </video>
           ) : (
             <>
-              <Image src={video.img.src} alt="" fill loading="eager" sizes="440px" className="scale-110 object-cover blur-md" />
+              {thumb ? <Image src={thumb.src} alt="" fill loading="eager" sizes="440px" className="scale-110 object-cover blur-md" /> : null}
               <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 50% 45%, rgb(0 41 51 / 0.5), rgb(0 22 28 / 0.92))" }} />
               <div className="absolute inset-0 grid place-items-center p-6 text-center text-white">
                 <div className="flex flex-col items-center">

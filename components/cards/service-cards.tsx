@@ -1,14 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { photos } from "@/content/media";
-import type { Service } from "@/content/types";
 import { localizeHref, type Locale } from "@/i18n/config";
+import type { ServiceView } from "@/lib/cms/view";
 import { Arrow } from "@/components/ui/brand";
 import { Icon } from "@/components/ui/icon";
 
 /** Standard glass service card: icon, title, summary, key points. */
-export function ServiceCard({ service, index, delay = 0 }: { service: Service; index: number; delay?: number }) {
+export function ServiceCard({ service, index, delay = 0 }: { service: ServiceView; index: number; delay?: number }) {
   return (
     <article
       id={service.slug}
@@ -39,8 +38,8 @@ export function ServiceCard({ service, index, delay = 0 }: { service: Service; i
 }
 
 /** Large image-led teal-ink glass card for flagship services. */
-export function ServiceFeatureCard({ service, locale, delay = 0 }: { service: Service; locale: Locale; delay?: number }) {
-  const img = photos[service.photo];
+export function ServiceFeatureCard({ service, delay = 0 }: { service: ServiceView; delay?: number }) {
+  const img = service.image;
   return (
     <article
       id={service.slug}
@@ -49,7 +48,7 @@ export function ServiceFeatureCard({ service, locale, delay = 0 }: { service: Se
       style={{ "--rd": `${delay}ms` } as React.CSSProperties}
     >
       <div className="img-frame img-zoom img-tint relative aspect-[4/3] rounded-[20px]">
-        <Image src={img.src} alt={img.alt[locale]} fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+        {img ? <Image src={img.src} alt={img.alt} fill sizes="(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw" className="object-cover" style={img.position ? { objectPosition: img.position } : undefined} /> : null}
       </div>
       <div className="relative flex flex-1 flex-col px-4 pb-5 pt-0 sm:px-5">
         <span className="icon-tile icon-tile--lg -mt-8 ring-4 ring-ink-900">
@@ -70,7 +69,7 @@ export function ServiceFeatureCard({ service, locale, delay = 0 }: { service: Se
 }
 
 /** Compact bento tile used on the home page. */
-export function ServiceMiniCard({ service, locale, cta, delay = 0 }: { service: Service; locale: Locale; cta: string; delay?: number }) {
+export function ServiceMiniCard({ service, locale, cta, delay = 0 }: { service: ServiceView; locale: Locale; cta: string; delay?: number }) {
   return (
     <Link
       href={localizeHref(`/services#${service.slug}`, locale)}

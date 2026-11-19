@@ -1,57 +1,61 @@
 import type { Metadata } from "next";
-import { resolveLocale } from "@/i18n/dictionaries";
-import { articleLabels } from "@/lib/content";
+import { pageMetadata, siteFor } from "@/lib/cms/page";
+import type { ArticlesFeaturedView, HeadingOnlyView, HeroView } from "@/lib/cms/view";
 import { PageHero } from "@/components/hero/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { ArticleCard, FeaturedArticle } from "@/components/cards/article-cards";
+import { renderSections } from "@/components/sections/render";
+import { articleLabels } from "@/components/sections/labels";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/articles">): Promise<Metadata> {
-  const { t } = await resolveLocale(params);
-  return { title: t.nav.articles, description: t.heroes.articles.subtitle };
+  const { site } = await siteFor(params);
+  return pageMetadata(site, site.pages.articles, "/articles");
 }
 
 export default async function ArticlesPage({ params }: PageProps<"/[lang]/articles">) {
-  const { locale, t } = await resolveLocale(params);
-  const p = t.articlesPage;
-  // Exactly 1 featured + 6 secondary articles.
-  const [featured, ...rest] = t.articles;
+  const { locale, site } = await siteFor(params);
+  const page = site.pages.articles;
+  // The featured article (first in the list), then the six next articles.
+  const [featured, ...rest] = site.articles;
   const secondary = rest.slice(0, 6);
-  const labels = articleLabels(t);
+  const labels = articleLabels(site);
 
-  return (
-    <>
-      {/* Hero */}
-      <PageHero locale={locale} t={t} photo="shoulderAssess" copy={t.heroes.articles} crumb={t.nav.articles} />
+  return renderSections(page, {
+    hero: (hero: HeroView) => <PageHero site={site} hero={hero} crumb={page.name} />,
 
-      {/* Featured article */}
-      <section className="section bg-snow">
-        <div className="container-x">
-          <SectionHeading eyebrow={p.intro.eyebrow} title={p.intro.title} text={p.intro.text} />
-          <div className="mt-12">
-            <FeaturedArticle article={featured} locale={locale} labels={{ ...labels, featured: p.featuredLabel }} />
+    featured: (c: ArticlesFeaturedView) =>
+      featured ? (
+        <section className="section bg-snow">
+          <div className="container-x">
+            <SectionHeading eyebrow={c.heading.eyebrow} title={c.heading.title} text={c.heading.text} />
+            <div className="mt-12">
+              <FeaturedArticle article={featured} locale={locale} labels={{ ...labels, featured: c.featuredLabel }} />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : null,
 
-      {/* Six secondary articles — 3 × 2 desktop, 2 cols tablet, 1 col mobile */}
-      <section className="section bg-ice">
-        <div className="container-x">
-          <SectionHeading eyebrow={p.latest.eyebrow} title={p.latest.title} />
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {secondary.map((a, i) => (
-              <ArticleCard
-                key={a.slug}
-                article={a}
-                locale={locale}
-                labels={labels}
-                // Checkerboard of cyan and teal-ink glass across the 3 × 2 grid.
-                tone={(Math.floor(i / 3) + (i % 3)) % 2 === 0 ? "aqua" : "ink"}
-                delay={(i % 3) * 100}
-              />
-            ))}
+    // Six secondary articles — 3 × 2 desktop, 2 cols tablet, 1 col mobile.
+    latest: (c: HeadingOnlyView) =>
+      secondary.length ? (
+        <section className="section bg-ice">
+          <div className="container-x">
+            <SectionHeading eyebrow={c.heading.eyebrow} title={c.heading.title} />
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {secondary.map((a, i) => (
+                <ArticleCard
+                  key={a.slug}
+                  article={a}
+                  locale={locale}
+                  labels={labels}
+                  // Checkerboard of cyan and teal-ink glass across the 3 × 2 grid.
+                  tone={(Math.floor(i / 3) + (i % 3)) % 2 === 0 ? "aqua" : "ink"}
+                  delay={(i % 3) * 100}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
-    </>
-  );
+        </section>
+      ) : null,
+  });
 }

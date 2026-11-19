@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import type { SocialPlatform } from "@/config/site";
+import type { SocialPlatform } from "@/lib/cms/types";
 
 type P = SVGProps<SVGSVGElement>;
 
@@ -50,11 +50,48 @@ export function TikTokIcon(props: P) {
   );
 }
 
+export function XIcon(props: P) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+      <path d="M17.6 3.5h3.07l-6.7 7.66 7.88 10.34h-6.17l-4.83-6.32-5.53 6.32H2.25l7.17-8.2L1.86 3.5h6.33l4.37 5.78 5.04-5.78Zm-1.08 16.18h1.7L7.25 5.22H5.42l11.1 14.46Z" />
+    </svg>
+  );
+}
+
+export function LinkedInIcon(props: P) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden {...props}>
+      <path d="M4.98 3.5a2.48 2.48 0 1 1 0 4.96 2.48 2.48 0 0 1 0-4.96ZM3 9.75h3.96V21H3V9.75Zm6.44 0h3.8v1.54h.05c.53-1 1.82-2.05 3.75-2.05 4 0 4.74 2.63 4.74 6.06V21h-3.96v-5.07c0-1.21-.02-2.77-1.69-2.77-1.69 0-1.95 1.32-1.95 2.68V21H9.44V9.75Z" />
+    </svg>
+  );
+}
+
+export function SnapchatIcon(props: P) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden {...props}>
+      <path d="M12 3.2c2.9 0 4.9 2.1 4.9 5.1v2.1c.5.2 1.1.1 1.6-.1.5-.2 1 .4.6.8-.6.6-1.5.9-2.1 1.1.5 1.8 2 3.1 3.8 3.6.3.1.4.5.1.7-.7.4-1.6.6-2.4.7-.2.5-.1 1.1-.5 1.3-.6.2-1.4-.1-2.2.1-.9.2-1.6 1.5-3.8 1.5s-2.9-1.3-3.8-1.5c-.8-.2-1.6.1-2.2-.1-.4-.2-.3-.8-.5-1.3-.8-.1-1.7-.3-2.4-.7-.3-.2-.2-.6.1-.7 1.8-.5 3.3-1.8 3.8-3.6-.6-.2-1.5-.5-2.1-1.1-.4-.4.1-1 .6-.8.5.2 1.1.3 1.6.1V8.3c0-3 2-5.1 4.9-5.1Z" />
+    </svg>
+  );
+}
+
+export function ThreadsIcon(props: P) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" aria-hidden {...props}>
+      <path d="M16.6 10.4c-.4-2.5-2.1-3.9-4.6-3.9-2.2 0-3.7 1.2-4.2 2.9" />
+      <path d="M17.9 8.6C17 5.4 14.8 3.5 12 3.5c-4.3 0-7.1 3.4-7.1 8.5s2.8 8.5 7.1 8.5c3.5 0 6.4-2.2 6.4-5.3 0-2.6-2.2-4.2-5.4-4.2-2.4 0-4 1.1-4 2.7 0 1.4 1.2 2.4 3 2.4 2.6 0 3.7-1.9 3.7-5" />
+    </svg>
+  );
+}
+
 export const socialIcons: Record<SocialPlatform, (props: P) => React.JSX.Element> = {
   facebook: FacebookIcon,
   instagram: InstagramIcon,
   youtube: YouTubeIcon,
   tiktok: TikTokIcon,
+  x: XIcon,
+  linkedin: LinkedInIcon,
+  snapchat: SnapchatIcon,
+  threads: ThreadsIcon,
 };
 
 export const socialNames: Record<SocialPlatform, string> = {
@@ -62,4 +99,8 @@ export const socialNames: Record<SocialPlatform, string> = {
   instagram: "Instagram",
   youtube: "YouTube",
   tiktok: "TikTok",
+  x: "X",
+  linkedin: "LinkedIn",
+  snapchat: "Snapchat",
+  threads: "Threads",
 };

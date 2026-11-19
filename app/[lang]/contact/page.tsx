@@ -1,98 +1,112 @@
 import type { Metadata } from "next";
-import { Clock3, MapPin, Navigation, Phone } from "lucide-react";
-import { phones, siteConfig, telFor, whatsappHref } from "@/config/site";
-import { resolveLocale } from "@/i18n/dictionaries";
+import { Clock3, Mail, MapPin, Navigation, Phone } from "lucide-react";
+import { pageMetadata, siteFor } from "@/lib/cms/page";
+import { telLink, whatsappLink } from "@/lib/cms/links";
+import type { ContactChannelsView, ContactFormView, HeadingOnlyView, HeroView } from "@/lib/cms/view";
 import { PageHero } from "@/components/hero/page-hero";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { Arrow } from "@/components/ui/brand";
 import { socialIcons, socialNames, WhatsAppIcon } from "@/components/ui/brand-icons";
 import { RichText } from "@/components/ui/rich-text";
 import { ContactForm } from "@/components/contact/contact-form";
+import { renderSections } from "@/components/sections/render";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/contact">): Promise<Metadata> {
-  const { t } = await resolveLocale(params);
-  return { title: t.nav.contact, description: t.heroes.contact.subtitle };
+  const { site } = await siteFor(params);
+  return pageMetadata(site, site.pages.contact, "/contact");
 }
 
 export default async function ContactPage({ params }: PageProps<"/[lang]/contact">) {
-  const { locale, t } = await resolveLocale(params);
-  const c = t.contactPage;
+  const { site } = await siteFor(params);
+  const page = site.pages.contact;
+  const { contact } = site;
 
-  return (
-    <>
-      {/* 1 ─ Hero */}
-      <PageHero locale={locale} t={t} photo="floorGuidance" copy={t.heroes.contact} crumb={t.nav.contact} />
+  return renderSections(page, {
+    hero: (hero: HeroView) => <PageHero site={site} hero={hero} crumb={page.name} />,
 
-      {/* 2–5 ─ Introduction + contact cards (phone, WhatsApp, location, hours) */}
+    channels: (c: ContactChannelsView) => (
       <section className="section bg-snow">
         <div className="container-x">
-          <SectionHeading eyebrow={c.intro.eyebrow} title={c.intro.title} text={c.intro.text} />
+          <SectionHeading eyebrow={c.heading.eyebrow} title={c.heading.title} text={c.heading.text} />
           <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
             {/* Phone — electric cyan glass */}
-            <div className="lg lg--aqua lg-hover group flex flex-col p-7 lg:col-span-2" data-reveal>
-              <div className="flex items-center justify-between">
-                <span className="icon-tile icon-tile--ink icon-tile--lg">
-                  <Phone size={26} aria-hidden />
-                </span>
-                <span className="dot-live" aria-hidden />
-              </div>
-              <h3 className="mt-6 text-xl font-bold">{c.cards.phone.title}</h3>
-              <p className="mt-1 text-ink-900/70">{c.cards.phone.text}</p>
-              <ul className="mt-5 space-y-2.5">
-                {phones.map((p) => (
-                  <li key={p.e164}>
-                    <a
-                      href={telFor(p)}
-                      className="flex items-center justify-between gap-4 rounded-2xl bg-white/60 px-4 py-3 shadow-[inset_0_0_0_1px_rgb(73_217_244/0.7)] transition-[background-color,box-shadow] duration-300 hover:bg-white hover:shadow-[inset_0_0_0_1.5px_rgb(73_217_244),0_10px_24px_-14px_rgb(73_217_244)]"
-                    >
-                      <span dir="ltr" className="font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-extrabold tracking-wide">
-                        {p.display}
-                      </span>
-                      <span className="btn btn--ink btn--sm pointer-events-none">
-                        <span className="btn__icon">
-                          <Phone size={14} aria-hidden />
+            {contact.phones.length ? (
+              <div className="lg lg--aqua lg-hover group flex flex-col p-7 lg:col-span-2" data-reveal>
+                <div className="flex items-center justify-between">
+                  <span className="icon-tile icon-tile--ink icon-tile--lg">
+                    <Phone size={26} aria-hidden />
+                  </span>
+                  <span className="dot-live" aria-hidden />
+                </div>
+                <h3 className="mt-6 text-xl font-bold">{c.phone.title}</h3>
+                <p className="mt-1 text-ink-900/70">{c.phone.text}</p>
+                <ul className="mt-5 space-y-2.5">
+                  {contact.phones.map((p) => (
+                    <li key={p.digits}>
+                      <a
+                        href={telLink(p.digits)}
+                        className="flex items-center justify-between gap-4 rounded-2xl bg-white/60 px-4 py-3 shadow-[inset_0_0_0_1px_rgb(73_217_244/0.7)] transition-[background-color,box-shadow] duration-300 hover:bg-white hover:shadow-[inset_0_0_0_1.5px_rgb(73_217_244),0_10px_24px_-14px_rgb(73_217_244)]"
+                      >
+                        <span className="flex flex-col">
+                          <span dir="ltr" className="font-display text-[clamp(1.35rem,2.6vw,1.9rem)] font-extrabold tracking-wide">
+                            {p.display}
+                          </span>
+                          {p.label ? <span className="text-xs font-semibold text-ink-900/60">{p.label}</span> : null}
                         </span>
-                        {c.cards.phone.action}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                        <span className="btn btn--ink btn--sm pointer-events-none">
+                          <span className="btn__icon">
+                            <Phone size={14} aria-hidden />
+                          </span>
+                          {c.phone.action}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
 
             {/* WhatsApp — teal ink glass */}
-            <a
-              href={whatsappHref(t.cta.whatsappMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lg lg--ink lg-hover group flex flex-col p-7 lg:col-span-2"
-              data-reveal
-              style={{ "--rd": "100ms" } as React.CSSProperties}
-            >
-              <div className="orb" style={{ width: 240, height: 240, insetInlineEnd: -60, top: -90, opacity: 0.5 }} aria-hidden />
-              <span className="icon-tile icon-tile--lg">
-                <WhatsAppIcon width={28} height={28} />
-              </span>
-              <h3 className="mt-6 text-xl font-bold">{c.cards.whatsapp.title}</h3>
-              <p className="mt-1 text-white/72">{c.cards.whatsapp.text}</p>
-              <span className="btn btn--aqua btn--sm mt-auto self-start">
-                <span className="btn__icon">
-                  <WhatsAppIcon width={15} height={15} />
+            {contact.whatsappDigits ? (
+              <a
+                href={whatsappLink(contact.whatsappDigits, contact.whatsappMessage)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="lg lg--ink lg-hover group flex flex-col p-7 lg:col-span-2"
+                data-reveal
+                style={{ "--rd": "100ms" } as React.CSSProperties}
+              >
+                <div className="orb" style={{ width: 240, height: 240, insetInlineEnd: -60, top: -90, opacity: 0.5 }} aria-hidden />
+                <span className="icon-tile icon-tile--lg">
+                  <WhatsAppIcon width={28} height={28} />
                 </span>
-                {c.cards.whatsapp.action}
-              </span>
-            </a>
+                <h3 className="mt-6 text-xl font-bold">{c.whatsapp.title}</h3>
+                <p className="mt-1 text-white/72">{c.whatsapp.text}</p>
+                <span className="btn btn--aqua btn--sm mt-auto self-start">
+                  <span className="btn__icon">
+                    <WhatsAppIcon width={15} height={15} />
+                  </span>
+                  {c.whatsapp.action}
+                </span>
+              </a>
+            ) : null}
 
-            {/* Location */}
+            {/* Location (+ email) */}
             <div className="lg lg-hover group p-7 lg:col-span-2" data-reveal>
               <span className="icon-tile icon-tile--ink">
                 <MapPin size={22} aria-hidden />
               </span>
-              <h3 className="mt-5 text-lg font-bold">{c.cards.location.title}</h3>
-              <p className="mt-1 text-sm text-ink-900/60">{c.cards.location.text}</p>
+              <h3 className="mt-5 text-lg font-bold">{c.location.title}</h3>
+              <p className="mt-1 text-sm text-ink-900/60">{c.location.text}</p>
               <p className="mt-3 font-display font-semibold">
-                <RichText text={c.cards.location.value} />
+                <RichText text={contact.address} />
               </p>
+              {contact.email ? (
+                <a href={`mailto:${contact.email}`} dir="ltr" className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-aqua-700 hover:text-ink-900">
+                  <Mail size={16} aria-hidden />
+                  {contact.email}
+                </a>
+              ) : null}
             </div>
 
             {/* Hours */}
@@ -100,63 +114,74 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
               <span className="icon-tile icon-tile--ink">
                 <Clock3 size={22} aria-hidden />
               </span>
-              <h3 className="mt-5 text-lg font-bold">{c.cards.hours.title}</h3>
-              <p className="mt-1 text-sm text-ink-900/60">{c.cards.hours.text}</p>
-              <p className="mt-3 font-display font-semibold">
-                <RichText text={c.cards.hours.value} />
+              <h3 className="mt-5 text-lg font-bold">{c.hours.title}</h3>
+              <p className="mt-1 text-sm text-ink-900/60">{c.hours.text}</p>
+              <p className="mt-3 whitespace-pre-line font-display font-semibold">
+                <RichText text={contact.hours} />
               </p>
             </div>
           </div>
         </div>
       </section>
+    ),
 
-      {/* 6 ─ Social media */}
-      <section className="section bg-ink on-dark">
-        <div className="container-x">
-          <SectionHeading eyebrow={c.socials.eyebrow} title={c.socials.title} text={c.socials.text} />
-          <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {siteConfig.socials.map(({ platform, href }, i) => {
-              const Glyph = socialIcons[platform];
-              return (
-                <li key={platform} data-reveal style={{ "--rd": `${i * 90}ms` } as React.CSSProperties}>
-                  <a href={href} target="_blank" rel="noopener noreferrer" className="lg lg--deep lg-hover group flex items-center gap-4 p-5">
-                    <span className="icon-tile icon-tile--lg">
-                      <Glyph width={26} height={26} />
-                    </span>
-                    <span className="flex-1">
-                      <span className="block font-display text-lg font-bold">{socialNames[platform]}</span>
-                      <span className="block text-sm text-aqua-300">{c.socials.eyebrow}</span>
-                    </span>
-                    <Arrow size={18} className="text-aqua-400 transition-transform duration-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </section>
+    socials: (c: HeadingOnlyView) =>
+      site.socials.length ? (
+        <section className="section bg-ink on-dark">
+          <div className="container-x">
+            <SectionHeading eyebrow={c.heading.eyebrow} title={c.heading.title} text={c.heading.text} />
+            <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {site.socials.map(({ platform, href }, i) => {
+                const Glyph = socialIcons[platform];
+                return (
+                  <li key={platform} data-reveal style={{ "--rd": `${(i % 4) * 90}ms` } as React.CSSProperties}>
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="lg lg--deep lg-hover group flex items-center gap-4 p-5">
+                      <span className="icon-tile icon-tile--lg">
+                        <Glyph width={26} height={26} />
+                      </span>
+                      <span className="flex-1">
+                        <span className="block font-display text-lg font-bold">{socialNames[platform]}</span>
+                        <span className="block text-sm text-aqua-300">{c.heading.eyebrow}</span>
+                      </span>
+                      <Arrow size={18} className="text-aqua-400 transition-transform duration-500 group-hover:translate-x-1 rtl:group-hover:-translate-x-1" />
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      ) : null,
 
-      {/* 7–8 ─ Location / map + contact form */}
+    booking: (c: ContactFormView) => (
       <section id="booking" className="section bg-ice scroll-mt-24">
         <div className="container-x grid gap-8 lg:grid-cols-[1.25fr_0.75fr]">
           <div className="lg p-6 sm:p-10" data-reveal="start">
-            <span className="eyebrow">{c.form.eyebrow}</span>
-            <h2 className="h-section mt-4">{c.form.title}</h2>
-            <p className="lead mt-3">{c.form.text}</p>
+            {c.heading.eyebrow ? <span className="eyebrow">{c.heading.eyebrow}</span> : null}
+            <h2 className="h-section mt-4">{c.heading.title}</h2>
+            {c.heading.text ? <p className="lead mt-3">{c.heading.text}</p> : null}
             <div className="mt-8">
-              <ContactForm labels={c.form} />
+              <ContactForm
+                whatsappDigits={contact.whatsappDigits}
+                labels={{
+                  name: c.nameLabel,
+                  phone: c.phoneLabel,
+                  reason: c.reasonLabel,
+                  reasons: c.reasons,
+                  message: c.messageLabel,
+                  submit: c.submitLabel,
+                  sent: c.sentMessage,
+                  required: c.requiredMessage,
+                  privacy: c.privacyNote,
+                  greeting: c.greeting,
+                }}
+              />
             </div>
           </div>
 
           <div className="lg lg--ink flex flex-col overflow-hidden p-2.5" data-reveal="end">
-            {siteConfig.mapEmbedUrl ? (
-              <iframe
-                src={siteConfig.mapEmbedUrl}
-                title={c.map.title}
-                className="min-h-[360px] w-full flex-1 rounded-[22px] border-0"
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+            {contact.mapEmbedUrl ? (
+              <iframe src={contact.mapEmbedUrl} title={c.map.title} className="min-h-[360px] w-full flex-1 rounded-[22px] border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
             ) : (
               <div
                 className="relative grid min-h-[320px] flex-1 place-items-center overflow-hidden rounded-[22px]"
@@ -179,18 +204,24 @@ export default async function ContactPage({ params }: PageProps<"/[lang]/contact
               </div>
             )}
             <div className="p-5">
-              <span className="eyebrow eyebrow--light">{c.map.eyebrow}</span>
+              {c.map.eyebrow ? <span className="eyebrow eyebrow--light">{c.map.eyebrow}</span> : null}
               <h3 className="mt-2 text-xl font-bold">{c.map.title}</h3>
               <p className="mt-2 flex items-start gap-2 text-sm text-white/75">
                 <Navigation size={16} className="mt-1 flex-none text-aqua-400" aria-hidden />
                 <span>
-                  <RichText text={c.cards.location.value} />
+                  <RichText text={contact.address} />
                 </span>
               </p>
+              {contact.mapLinkUrl ? (
+                <a href={contact.mapLinkUrl} target="_blank" rel="noopener noreferrer" className="link-arrow link-arrow--light mt-4">
+                  Google Maps
+                  <Arrow size={16} />
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
       </section>
-    </>
-  );
+    ),
+  });
 }

@@ -17,8 +17,8 @@ export function SectionHeading({ eyebrow, title, text, align = "start", aside, c
   return (
     <div className={`flex flex-col gap-6 md:flex-row md:items-end md:justify-between ${centered ? "md:flex-col md:items-center" : ""} ${className}`}>
       <div className={`max-w-2xl ${centered ? "mx-auto text-center" : ""}`} data-reveal>
-        <span className={`eyebrow ${centered ? "justify-center" : ""}`}>{eyebrow}</span>
-        <Tag className="h-section mt-4">
+        {eyebrow ? <span className={`eyebrow ${centered ? "justify-center" : ""}`}>{eyebrow}</span> : null}
+        <Tag className={`h-section ${eyebrow ? "mt-4" : ""}`}>
           <RichText text={title} />
         </Tag>
         {text ? (

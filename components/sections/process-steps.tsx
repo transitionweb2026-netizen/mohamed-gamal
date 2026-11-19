@@ -1,4 +1,4 @@
-import type { Step } from "@/content/types";
+import type { StepView as Step } from "@/lib/cms/view";
 import { Icon } from "@/components/ui/icon";
 
 /** Home "treatment journey": four glass steps joined by a flowing cyan line. */

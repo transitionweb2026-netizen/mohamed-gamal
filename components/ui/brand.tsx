@@ -1,17 +1,17 @@
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import type { LucideProps } from "lucide-react";
-import logoMark from "@/public/images/brand/logo-mark.png";
+import type { Img } from "@/lib/cms/view";
 
 /**
- * Logo mark — Dr. Mohamed Gamal's MG monogram on the teal tile
- * (compact version of the full logo, which has the wordmark underneath).
- * Decorative: the doctor's name is always written next to it.
+ * Logo mark next to the doctor's name (Website settings → Logo mark).
+ * Decorative: the doctor's name is always written next to it. Without a
+ * logo, the monogram is shown on the brand tile.
  */
-export function BrandMark({ className = "" }: { className?: string }) {
+export function BrandMark({ logo, monogram = "MG", className = "" }: { logo: Img | null; monogram?: string; className?: string }) {
   return (
     <span className={`brand-mark ${className}`} aria-hidden>
-      <Image src={logoMark} alt="" sizes="96px" />
+      {logo ? <Image src={logo.src} alt="" width={96} height={96} sizes="96px" /> : <span className="grid h-full w-full place-items-center bg-aqua-500 font-display text-sm font-extrabold text-ink-900">{monogram}</span>}
     </span>
   );
 }
