@@ -5,7 +5,7 @@ import { Info } from "lucide-react";
 import { locales, localizeHref } from "@/i18n/config";
 import { pageMetadata, siteFor } from "@/lib/cms/page";
 import { whatsappLink } from "@/lib/cms/links";
-import { getSnapshot } from "@/lib/cms/source";
+import { getPublishedSnapshot } from "@/lib/cms/source";
 import { PageHero } from "@/components/hero/page-hero";
 import { Arrow, BrandMark } from "@/components/ui/brand";
 import { WhatsAppIcon } from "@/components/ui/brand-icons";
@@ -16,7 +16,7 @@ import { articleLabels } from "@/components/sections/labels";
 
 /** Published articles are prerendered; articles published later are rendered on first visit. */
 export async function generateStaticParams() {
-  const snapshot = await getSnapshot();
+  const snapshot = await getPublishedSnapshot();
   return locales.flatMap((lang) => snapshot.articles.map((a) => ({ lang, slug: a.slug })));
 }
 

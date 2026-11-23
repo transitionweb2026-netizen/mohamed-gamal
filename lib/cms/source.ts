@@ -66,6 +66,19 @@ export const getSnapshot = cache(async (): Promise<CmsSnapshot> => {
   return fetchSnapshot(preview);
 });
 
+/**
+ * Published content only, without reading the request — for build-time code
+ * such as generateStaticParams, where draftMode() and cookies() throw.
+ */
+export const getPublishedSnapshot = cache(async (): Promise<CmsSnapshot> => {
+  if (isLocalCms) return localDb("anon").rpc<CmsSnapshot>("cms_snapshot", { p_preview: false });
+  if (!isSupabaseConfigured) {
+    bundled ??= buildBundledSnapshot();
+    return bundled;
+  }
+  return fetchSnapshot(false);
+});
+
 /** The whole website resolved for one language (one snapshot per request). */
 export const getSite = cache(async (locale: Locale): Promise<SiteView> =>
   buildSiteView(await getSnapshot(), locale, isLocalCms ? LOCAL_STORAGE_BASE : storagePublicBaseUrl),
