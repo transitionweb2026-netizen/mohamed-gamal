@@ -32,12 +32,13 @@ The dashboard lives at **`/admin`**. Content is stored in Supabase (Postgres + A
 **Authentication → Users → Add user → Create new user**: your email, a password you choose, and tick **Auto Confirm User**. (You type the password yourself; it is never shared with anyone.)
 
 ### 4. Create the tables, import the content, make yourself owner
-Get the connection string: **Connect** (top bar) → **Session pooler** → copy the URI and put your database password in it. Then, on your computer, in this project folder:
+Get the connection string: **Connect** (top bar) → **Session pooler** → copy the URI. Use the pooler, not the direct connection — the direct one is IPv6-only and unreachable from most networks. Leave the password out of the URI and give it separately (single quotes keep characters such as `#` intact). Then, on your computer, in this project folder:
 
 ```powershell
-$env:SUPABASE_DB_URL = "postgresql://postgres.<project-ref>:<password>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+$env:SUPABASE_DB_URL = "postgresql://postgres.<project-ref>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+$env:PGPASSWORD = '<database password>'
 npm run db:setup -- --owner you@example.com
-Remove-Item Env:SUPABASE_DB_URL
+Remove-Item Env:SUPABASE_DB_URL, Env:PGPASSWORD
 ```
 
 This applies `supabase/migrations/` (tables, RLS, functions, storage buckets and policies), imports the current website content from `supabase/seed/content.sql` (never overwriting rows that already exist), and grants you the owner role. It is safe to run again. The connection string stays on your computer — never put it in Vercel or in a file that is committed.

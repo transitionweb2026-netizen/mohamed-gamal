@@ -7,8 +7,10 @@
  *      existing rows are never overwritten);
  *   3. optionally makes an existing Supabase Auth user the first owner.
  *
- * Usage (PowerShell):
- *   $env:SUPABASE_DB_URL = "postgresql://postgres.<ref>:<password>@<host>:5432/postgres"
+ * Usage (PowerShell) — the Session pooler string WITHOUT the password, and
+ * the password separately (single quotes keep characters such as # intact):
+ *   $env:SUPABASE_DB_URL = "postgresql://postgres.<ref>@aws-0-<region>.pooler.supabase.com:5432/postgres"
+ *   $env:PGPASSWORD = '<database password>'
  *   npm run db:setup -- --owner you@example.com
  *
  * Options:  --owner <email>   grant the owner role to this existing user
@@ -30,7 +32,19 @@ const option = (name: string) => {
 
 const url = process.env.SUPABASE_DB_URL;
 if (!url) {
-  console.error("SUPABASE_DB_URL is not set. Copy the connection string from Supabase → Project Settings → Database → Connection string (Session pooler), with your database password.");
+  console.error("SUPABASE_DB_URL is not set. Copy the Session pooler connection string from Supabase → Connect.");
+  process.exit(1);
+}
+if (url.includes("[YOUR-DATABASE-PASSWORD]") || url.includes("[YOUR-PASSWORD]")) {
+  console.error("Remove the [YOUR-DATABASE-PASSWORD] placeholder from SUPABASE_DB_URL and give the password in PGPASSWORD instead (it may contain characters such as # that break a URL).");
+  process.exit(1);
+}
+if (/@db\.[a-z0-9]+\.supabase\.co/.test(url)) {
+  console.error("This is the direct connection (IPv6 only, unreachable from most networks). Use the Session pooler string instead: Supabase → Connect → Session pooler.");
+  process.exit(1);
+}
+if (!process.env.PGPASSWORD && !/:\/\/[^:/]+:[^@]+@/.test(url)) {
+  console.error("No password: set PGPASSWORD (recommended) or include it in SUPABASE_DB_URL.");
   process.exit(1);
 }
 const ownerEmail = option("--owner")?.trim().toLowerCase();
@@ -38,6 +52,7 @@ const dryRun = flag("--dry-run");
 
 const client = new pg.Client({
   connectionString: url,
+  ...(process.env.PGPASSWORD ? { password: process.env.PGPASSWORD } : {}),
   // Supabase requires TLS. Its certificate is issued by Supabase's own CA, so
   // set PGSSLROOTCERT to the downloaded certificate to verify it fully.
   ssl: process.env.PGSSLROOTCERT ? { ca: readFileSync(process.env.PGSSLROOTCERT, "utf8") } : { rejectUnauthorized: false },
