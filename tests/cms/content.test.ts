@@ -70,7 +70,7 @@ describe("bundled content", () => {
   });
 
   it("matches the committed seed file (run `npm run cms:seed-sql` after changing content/)", () => {
-    const committed = readFileSync(join(process.cwd(), "supabase", "seed", "content.sql"), "utf8");
+    const committed = readFileSync(join(process.cwd(), "supabase", "seed", "content.sql"), "utf8").replace(/\r\n/g, "\n");
     expect(committed).toBe(seedSql(snapshot));
   });
 });

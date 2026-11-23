@@ -1,14 +1,17 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────
- *  SITE CONFIGURATION — the single place for real contact details.
+ *  INITIAL CONTACT DETAILS — the starting content of the CMS.
  * ─────────────────────────────────────────────────────────────────────────
- *  Every value marked  ⚠ PLACEHOLDER  must be replaced with Dr. Mohamed
- *  Gamal's real information before launch. Nothing here was invented:
- *  the social links below are deliberately non-working placeholders.
- *  The phone numbers are the doctor's real booking numbers.
+ *  Once Supabase is connected, contact details are edited in the dashboard
+ *  (/admin/contact, /admin/social, /admin/seo) and this file is no longer
+ *  read by the website. It is only the source of the initial content:
+ *  `npm run cms:seed-sql` turns it (with content/) into
+ *  supabase/seed/content.sql, and it is what the website shows while the
+ *  CMS is not connected.
  *
- *  Changing a value here updates the navbar, every hero contact panel,
- *  the global CTA, the contact page and the footer at once.
+ *  Values marked  ⚠ PLACEHOLDER  were never invented: the social links are
+ *  deliberately non-working placeholders. The phone numbers are the
+ *  doctor's real booking numbers.
  */
 
 export type SocialPlatform = "facebook" | "instagram" | "youtube" | "tiktok";

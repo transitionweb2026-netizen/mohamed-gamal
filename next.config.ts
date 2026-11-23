@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
   turbopack: { root: __dirname },
   outputFileTracingRoot: __dirname,
   poweredByHeader: false,
+  // Local development database (CMS_LOCAL=1); never loaded in production.
+  serverExternalPackages: ["@electric-sql/pglite"],
+  experimental: {
+    // Dashboard forms send whole documents (article bodies) to Server Actions.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

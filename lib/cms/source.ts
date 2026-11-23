@@ -1,7 +1,8 @@
 import "server-only";
-import { draftMode } from "next/headers";
+import { cookies, draftMode } from "next/headers";
 import { cache } from "react";
 import { buildBundledSnapshot } from "./bundled";
+import { isLocalCms, LOCAL_ADMIN, LOCAL_STORAGE_BASE, localDb } from "./local/local-db";
 import { buildSiteView } from "./reader";
 import type { CmsSnapshot, Locale } from "./types";
 import type { SiteView } from "./view";
@@ -23,7 +24,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  * so a short outage never takes the website down or shows stale bundled
  * content. A transient failure is retried once before giving up.
  */
-export const contentSource: "supabase" | "bundled" = isSupabaseConfigured ? "supabase" : "bundled";
+export const contentSource: "supabase" | "local" | "bundled" = isSupabaseConfigured ? "supabase" : isLocalCms ? "local" : "bundled";
+
+/** Same name as in lib/cms/admin/session.ts (kept here to avoid a dependency on the dashboard). */
+const LOCAL_SESSION_COOKIE = "cms_local_session";
 
 let bundled: CmsSnapshot | undefined;
 
@@ -45,7 +49,15 @@ async function fetchSnapshot(preview: boolean): Promise<CmsSnapshot> {
   throw new Error(`CMS: could not load the website content from Supabase (${lastError}).`);
 }
 
+/** Development only (CMS_LOCAL=1): the local database the dashboard edits. */
+async function fetchLocalSnapshot(preview: boolean): Promise<CmsSnapshot> {
+  const signedIn = (await cookies()).get(LOCAL_SESSION_COOKIE)?.value === "1";
+  const db = localDb(preview && signedIn ? { userId: LOCAL_ADMIN.id } : "anon");
+  return db.rpc<CmsSnapshot>("cms_snapshot", { p_preview: preview && signedIn });
+}
+
 export const getSnapshot = cache(async (): Promise<CmsSnapshot> => {
+  if (isLocalCms) return fetchLocalSnapshot((await draftMode()).isEnabled);
   if (!isSupabaseConfigured) {
     bundled ??= buildBundledSnapshot();
     return bundled;
@@ -55,4 +67,6 @@ export const getSnapshot = cache(async (): Promise<CmsSnapshot> => {
 });
 
 /** The whole website resolved for one language (one snapshot per request). */
-export const getSite = cache(async (locale: Locale): Promise<SiteView> => buildSiteView(await getSnapshot(), locale, storagePublicBaseUrl));
+export const getSite = cache(async (locale: Locale): Promise<SiteView> =>
+  buildSiteView(await getSnapshot(), locale, isLocalCms ? LOCAL_STORAGE_BASE : storagePublicBaseUrl),
+);

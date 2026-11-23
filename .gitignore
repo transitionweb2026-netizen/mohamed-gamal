@@ -25,3 +25,9 @@ next-env.d.ts
 
 # local Claude Code settings
 .claude/settings.local.json
+
+# local CMS database (development only)
+/.cms-local/
+
+# Local CMS uploads (development only)
+/public/uploads/

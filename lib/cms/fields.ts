@@ -128,6 +128,30 @@ export function emptyDoc(fields: Field[]): Record<string, unknown> {
   return Object.fromEntries(fields.map((field) => [field.key, emptyValue(field)]));
 }
 
+/**
+ * A stored document completed with empty values for fields it does not have
+ * yet (e.g. fields added after the content was written), so forms always get
+ * the full shape. Unknown keys are dropped.
+ */
+export function withDefaults(fields: Field[], doc: unknown): Record<string, unknown> {
+  const record = typeof doc === "object" && doc !== null && !Array.isArray(doc) ? (doc as Record<string, unknown>) : {};
+  const out: Record<string, unknown> = {};
+  for (const field of fields) {
+    const value = record[field.key];
+    if (value === undefined) out[field.key] = emptyValue(field);
+    else if (field.type === "group") out[field.key] = withDefaults(field.fields, value);
+    else if (field.type === "list") out[field.key] = Array.isArray(value) ? value.map((item) => withDefaults(field.fields, item)) : [];
+    else if (isLocalized(field) && (typeof value !== "object" || value === null || !("ar" in value) || !("en" in value))) {
+      const empty = emptyValue(field) as Record<string, unknown>;
+      out[field.key] = typeof value === "object" && value !== null ? { ...empty, ...(value as object) } : empty;
+    } else if (field.type === "cta" && value !== null && typeof value === "object") {
+      const empty = { label: { ar: "", en: "" }, href: "/" };
+      out[field.key] = { ...empty, ...(value as object) };
+    } else out[field.key] = value;
+  }
+  return out;
+}
+
 /* ---- Validation -------------------------------------------------------------- */
 
 export interface FieldError {
